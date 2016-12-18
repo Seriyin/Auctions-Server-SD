@@ -8,14 +8,6 @@ package auctionsserver;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  *
@@ -56,11 +48,6 @@ public class AuctionsServer {
     }
 */
     
-    private void runKiller() {
-        Thread t=new Thread(new ServerWorkerKiller());
-        t.start();
-    }
-
     
     /**
      * Need to make these workers
@@ -78,7 +65,6 @@ public class AuctionsServer {
         try {
             AuctionsServer s=new AuctionsServer(9999);
 //            s.runMasterThread();
-            s.runKiller();
             while (true) {
                 s.accept();
                 s.runThreads();

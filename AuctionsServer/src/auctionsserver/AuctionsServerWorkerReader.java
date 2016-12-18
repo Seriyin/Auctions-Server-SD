@@ -85,14 +85,6 @@ public class AuctionsServerWorkerReader implements Runnable
         {
             e.printStackTrace();
         }
-        try 
-        {
-            ThreadQueueSingleton.Instance().put(Thread.currentThread());
-        } 
-        catch (InterruptedException ex) 
-        {
-            ex.printStackTrace();
-        }
     }
 
     
