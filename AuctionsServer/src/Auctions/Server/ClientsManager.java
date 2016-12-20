@@ -10,28 +10,35 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Every ClientsManager is a manager for an auction house.
- * It manages accesses to all relevant client data
- * and also writer threads' queues of messages to write out
- * to clients.
+ * It manages accesses to all relevant client data.
+ * It keeps a pool of threads handy to instantiate
+ * WorkerFetchers which are in charge of handling String construction
+ * and which later defer socket writing to its own WorkerWriters.
+ * It must take care to ensure that disconnected clients will still
+ * be informed of relevant events when they reconnect(such as the ending 
+ * of auctions in which they participated).
  * @author Andre
  */
 public class ClientsManager {
-    private final Map<String,String> clients;
-    private final Map<String,Socket> activeClients;
-    private final Map<Long,List<String>> bidders;
-    private final Map<Long,String> highestBidders;
-    private final Map<String,BlockingQueue<String>> writeQueues;
+    //To be replaced by protobuffers
+    private final Map<String,String> Clients;
+    private final Map<String,Socket> ActiveClients;
+    private final Map<Long,List<String>> Bidders;
+    private final Map<Long,String> HighestBidders;
+    private final ExecutorService WriterPool;
     
     public ClientsManager() 
     {
-        activeClients = new HashMap<>();
-        bidders = new HashMap<>();
-        highestBidders = new HashMap<>();
-        clients = new HashMap<>();
-        writeQueues=new HashMap<>();
+        ActiveClients = new HashMap<>();
+        Bidders = new HashMap<>();
+        HighestBidders = new HashMap<>();
+        Clients = new HashMap<>();
+        WriterPool = Executors.newFixedThreadPool(2048);
     }
 
     boolean registerUser(String user, String password) {

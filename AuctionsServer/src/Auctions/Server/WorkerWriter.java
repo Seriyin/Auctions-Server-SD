@@ -11,27 +11,25 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
- *
+ * Workers that exclusively write Strings to the corresponding socket.
  * @author Andre
  */
-public class AuctionsServerWorkerWriter implements Runnable {
-    private final String user;
-    private final ClientsManager clm;
-    private final Socket sckt;
-    private PrintWriter pw;
+public class WorkerWriter implements Runnable {
+    private final String ToWrite;
+    private final Socket SocketToWrite;
+    private PrintWriter SocketOutput;
 
-    AuctionsServerWorkerWriter(String user, ClientsManager clm, Socket sckt) {
-        this.user=user;
-        this.clm=clm;
-        this.sckt=sckt;
+    WorkerWriter(String ToWrite, Socket SocketToWrite) {
+        this.ToWrite=ToWrite;
+        this.SocketToWrite=SocketToWrite;
     }
     
-    private PrintWriter initWriterToSocket(Socket sckt) 
+    private PrintWriter initWriterToSocket(Socket SocketToWrite) 
     {
         OutputStream strm;
         try 
         {
-            strm = sckt.getOutputStream();            
+            strm = SocketToWrite.getOutputStream();            
         }
         catch(IOException e) 
         {
@@ -44,7 +42,7 @@ public class AuctionsServerWorkerWriter implements Runnable {
     public void run() 
     {
         System.out.println("Worker Writer Start");
-        if ((pw=initWriterToSocket(sckt))==null)
+        if ((SocketOutput=initWriterToSocket(SocketToWrite))==null)
         {
             return;
         }
@@ -53,7 +51,7 @@ public class AuctionsServerWorkerWriter implements Runnable {
         */
         try
         {
-            sckt.close();
+            SocketToWrite.close();
         }
         catch (IOException e) 
         {

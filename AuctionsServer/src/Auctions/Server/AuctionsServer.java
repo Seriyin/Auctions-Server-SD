@@ -54,7 +54,7 @@ public class AuctionsServer {
      */
     public void runThreads() {
         Thread t;
-        t = new Thread(new AuctionsServerWorkerReader(sckt,clm));
+        t = new Thread(new WorkerReader(sckt,clm));
         t.start();
     }
 

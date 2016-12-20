@@ -8,21 +8,21 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 
 /** 
- * AuctionReaders are in charge of handling all input from user
+ * AuctionReaders are in charge of handling all input from clients
  * and delegating that input to its ClientsManager.
- * AuctionReaders instantiate their own writers.
- * Management of communication is delegated to its ClientsManager.
+ * AuctionReaders delegate writers instantiation to ClientsManager
+ * Management of communication is delegated to its ClientsManager as well.
  *
  * @author Andre
  *
  */
-public class AuctionsServerWorkerReader implements Runnable 
+public class WorkerReader implements Runnable 
 {
-    private final Socket sckt;
-    private final ClientsManager clm;
-    private BufferedReader bf;
-    private String user;
-    private String password;
+    private final Socket SocketToRead;
+    private final ClientsManager WorkerClientsManager;
+    private BufferedReader SocketInput;
+    private String User;
+    private String Password;
     
     /**
      * 
@@ -30,18 +30,19 @@ public class AuctionsServerWorkerReader implements Runnable
      * @param clm The ClientsManager this worker delegates communication
      * and sanitized input to.
      */
-    public AuctionsServerWorkerReader(Socket sckt, ClientsManager clm) 
+    public WorkerReader(Socket SocketToRead, 
+                        ClientsManager WorkerClientsManager) 
     {
-        this.sckt=sckt;
-        this.clm=clm;
+        this.SocketToRead=SocketToRead;
+        this.WorkerClientsManager=WorkerClientsManager;
     }
 
-    private BufferedReader initReaderToSocket(Socket sckt) 
+    private BufferedReader initReaderToSocket(Socket SocketToRead) 
     {
         InputStream strm;
         try 
         {
-            strm = sckt.getInputStream();            
+            strm = SocketToRead.getInputStream();            
         }
         catch(IOException e) 
         {
@@ -55,7 +56,7 @@ public class AuctionsServerWorkerReader implements Runnable
     public void run() 
     {
         System.out.println("Worker Reader Start");
-        if ((bf=initReaderToSocket(sckt))==null)
+        if ((SocketInput=initReaderToSocket(SocketToRead))==null)
         {
             return;
         }
@@ -63,11 +64,10 @@ public class AuctionsServerWorkerReader implements Runnable
         successfulLogin=attemptLogin();
         if (successfulLogin) 
         {
-            createWorkerWriter();
             String str;
             try
             {
-                while ((str=bf.readLine())!=null) 
+                while ((str=SocketInput.readLine())!=null) 
                 {
                     handleInput(str);
                 }
@@ -79,7 +79,7 @@ public class AuctionsServerWorkerReader implements Runnable
         }    
         try
         {
-            sckt.close();
+            SocketToRead.close();
         }
         catch (IOException e) 
         {
@@ -95,20 +95,22 @@ public class AuctionsServerWorkerReader implements Runnable
         { 
             do 
             {
-                boolean isLogin = bf.readLine().equals("0");
-                user=bf.readLine();
-                password = null;
-                if (user!=null)
-                    password=bf.readLine();
-                if (password!=null) 
+                boolean isLogin = SocketInput.readLine().equals("0");
+                User=SocketInput.readLine();
+                Password = null;
+                if (User!=null)
+                    Password=SocketInput.readLine();
+                if (Password!=null) 
                 { 
                     if (isLogin)
                     {
-                        successfulLogin=clm.loginUser(user,password);
+                        successfulLogin=
+                                WorkerClientsManager.loginUser(User,Password);
                     }
                     else
                     {
-                        successfulLogin=clm.registerUser(user,password);
+                        successfulLogin=
+                            WorkerClientsManager.registerUser(User,Password);
                     }
                 }
             }
@@ -119,45 +121,40 @@ public class AuctionsServerWorkerReader implements Runnable
     }
 
     private void handleInput(String str) {
-        String[] inputSplit = str.trim().split("|");
-        if (inputSplit.length>=1) 
+        String[] InputSplit = str.trim().split("|");
+        if (InputSplit.length>=1) 
         {
-            if (inputSplit[0].equals("C")) 
+            if (InputSplit[0].equals("C")) 
             {
-                if(inputSplit.length==1) 
+                if(InputSplit.length==1) 
                 {
                     try
                     {
-                        clm.listClients(inputSplit[1]);
+                        WorkerClientsManager.listClients(InputSplit[1]);
                     }
                     catch(NumberFormatException e){}                
                 } 
-                else if(inputSplit.length==2)
+                else if(InputSplit.length==2)
                 {
                     try
                     {
-                        long hash=Long.parseLong(inputSplit[1]);
-                        float value=Float.parseFloat(inputSplit[2]);
-                        clm.registerBid(hash,value,user);
+                        long BidHash=Long.parseLong(InputSplit[1]);
+                        float ValueToBid=Float.parseFloat(InputSplit[2]);
+                        WorkerClientsManager.registerBid(BidHash,ValueToBid,User);
                     }
                     catch(NumberFormatException e){}
                 }
             }
-            else if (inputSplit[0].equals("V") && inputSplit.length==2) 
+            else if (InputSplit[0].equals("V") && InputSplit.length==2) 
             {
                 try
                 {
-                    clm.registerAuction(user,inputSplit[1]);
+                    WorkerClientsManager.registerAuction(User,InputSplit[1]);
                 }
                 catch(NumberFormatException e) {}                
             }
         }
     }
 
-    private void createWorkerWriter() 
-    {
-        Thread t= new Thread(new AuctionsServerWorkerWriter(user,clm,sckt));
-        t.start();
-    }
     
 }
