@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package auctionsserver;
+package Auctions.Server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -14,47 +14,28 @@ import java.net.Socket;
  * @author andre
  */
 public class AuctionsServer {
-    private final ServerSocket s;
-    private Socket sckt;
-    private final ClientsManager clm;
+    private final ServerSocket ServerSocket;
+    private Socket CurrentSocket;
+    private final ClientsManager AuctionsClientsManager;
     
     public AuctionsServer(int port) throws IOException 
     {
-        s=new ServerSocket(port);
-        clm = new ClientsManager();
+        ServerSocket=new ServerSocket(port);
+        AuctionsClientsManager = new ClientsManager();
     }
     
     public void accept() throws IOException {
-        sckt = s.accept();
+        CurrentSocket = ServerSocket.accept();
     }
     
     public Socket getSocket() {
-        return sckt;
+        return CurrentSocket;
     }
     
-    // maybe it will be useful, who knows
-/*
-    public void runMasterThread() {
+        
+    public void runThread() {
         Thread t;
-        t = new Thread(new AuctionsServerMaster(sckt,messages,clients,lclients));
-        t.start();
-        try {
-            l.lock();
-            tll.add(t);
-        }
-        finally {
-            l.unlock();
-        }
-    }
-*/
-    
-    
-    /**
-     * Need to make these workers
-     */
-    public void runThreads() {
-        Thread t;
-        t = new Thread(new WorkerReader(sckt,clm));
+        t = new Thread(new WorkerReader(CurrentSocket,AuctionsClientsManager));
         t.start();
     }
 
@@ -67,7 +48,7 @@ public class AuctionsServer {
 //            s.runMasterThread();
             while (true) {
                 s.accept();
-                s.runThreads();
+                s.runThread();
                 System.out.println("Run Thread");
             }
         }

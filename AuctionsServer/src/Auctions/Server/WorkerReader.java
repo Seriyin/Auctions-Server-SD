@@ -1,5 +1,5 @@
 
-package auctionsserver;
+package Auctions.Server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,9 +26,9 @@ public class WorkerReader implements Runnable
     
     /**
      * 
-     * @param sckt The client socket this worker handles
-     * @param clm The ClientsManager this worker delegates communication
-     * and sanitized input to.
+     * @param SocketToRead The client socket this worker handles
+     * @param WorkerClientsManager The ClientsManager this worker delegates 
+     * communication and sanitized input to.
      */
     public WorkerReader(Socket SocketToRead, 
                         ClientsManager WorkerClientsManager) 
@@ -87,54 +87,64 @@ public class WorkerReader implements Runnable
         }
     }
 
-    
+    /** A login is indicate by a 0.
+     * A registration is indicated by not a 0. Implementation dependent.
+    */
     private boolean attemptLogin() 
     {
-        boolean successfulLogin=false;
+        boolean SuccessfulLogin=false;
         try 
         { 
             do 
             {
-                boolean isLogin = SocketInput.readLine().equals("0");
+                boolean IsLogin = SocketInput.readLine().equals("0");
                 User=SocketInput.readLine();
                 Password = null;
                 if (User!=null)
                     Password=SocketInput.readLine();
                 if (Password!=null) 
                 { 
-                    if (isLogin)
+                    if (IsLogin)
                     {
-                        successfulLogin=
-                                WorkerClientsManager.loginUser(User,Password);
+                        SuccessfulLogin=
+                            WorkerClientsManager.loginUser(User,
+                                                           Password,
+                                                           SocketToRead);
                     }
                     else
                     {
-                        successfulLogin=
-                            WorkerClientsManager.registerUser(User,Password);
+                        SuccessfulLogin=
+                            WorkerClientsManager.registerUser(User,
+                                                              Password,
+                                                              SocketToRead);
                     }
                 }
             }
-            while (successfulLogin);
+            while (SuccessfulLogin);
         }
         catch(IOException ex) {}
-        return successfulLogin;
+        return SuccessfulLogin;
     }
 
+    
     private void handleInput(String str) {
         String[] InputSplit = str.trim().split("|");
         if (InputSplit.length>=1) 
         {
+            //There is a command by a client 'C'
             if (InputSplit[0].equals("C")) 
             {
+                //There is just the command, it's a request to read.
                 if(InputSplit.length==1) 
                 {
                     try
                     {
-                        WorkerClientsManager.listClients(InputSplit[1]);
+                        WorkerClientsManager.listClients(User);
                     }
                     catch(NumberFormatException e){}                
                 } 
-                else if(InputSplit.length==2)
+                //There is a command and two arguments, it's a bid.
+                else if(InputSplit.length==3)
                 {
                     try
                     {
@@ -145,13 +155,23 @@ public class WorkerReader implements Runnable
                     catch(NumberFormatException e){}
                 }
             }
-            else if (InputSplit[0].equals("V") && InputSplit.length==2) 
-            {
-                try
+            //There is a command by a vendor.
+            else if (InputSplit[0].equals("V")) 
+            { 
+                //If there is an argument try parsing an auction code
+                //Otherwise it's an auction registration
+                if(InputSplit.length==2) 
                 {
-                    WorkerClientsManager.registerAuction(User,InputSplit[1]);
-                }
-                catch(NumberFormatException e) {}                
+                    try
+                    {
+                        long AuctionCode=Long.parseLong(InputSplit[1]);
+                        WorkerClientsManager.endAuction(User,AuctionCode);
+                    }
+                    catch(NumberFormatException e) 
+                    {
+                        WorkerClientsManager.registerAuction(User,InputSplit[1]);                        
+                    }
+                }                
             }
         }
     }

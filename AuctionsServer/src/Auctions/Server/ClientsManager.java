@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package auctionsserver;
+package Auctions.Server;
 
 import java.net.Socket;
 import java.util.HashMap;
@@ -41,23 +41,66 @@ public class ClientsManager {
         WriterPool = Executors.newFixedThreadPool(2048);
     }
 
-    boolean registerUser(String user, String password) {
+    boolean registerUser(String User, String Password,Socket RequestSocket) 
+    {
+        boolean SuccessfulRegistration=true;
+        synchronized(this.Clients) 
+        {
+            if (Clients.containsKey(User)) 
+            {
+                //In deployment should have a localization layer.
+                WriterPool.submit(new WorkerWriter("Utilizador já registado",RequestSocket));
+                SuccessfulRegistration =false;
+            }
+            Clients.put(User, Password);
+        }
+        synchronized(this.ActiveClients) 
+        {
+            ActiveClients.put(User, RequestSocket);
+        }
+        return SuccessfulRegistration;
+    }
+
+    boolean loginUser(String User, String Password,Socket RequestSocket) 
+    {
+        boolean SuccessfulLogin = true;
+        synchronized(this.Clients) 
+        {
+            if (!Clients.containsKey(User)) 
+            {
+                //In deployment should have a localization layer.
+                WriterPool.submit(new WorkerWriter("Utilizador não existe",RequestSocket));
+                SuccessfulLogin=false;
+            }
+            else if (!Clients.get(User).equals(Password)) 
+            {
+                WriterPool.submit(new WorkerWriter("Password Incorreta",RequestSocket));
+                SuccessfulLogin=false;
+            }
+        }
+        if (SuccessfulLogin) 
+        {
+            synchronized(this.ActiveClients) 
+            {
+                ActiveClients.put(User, RequestSocket);
+            }
+        }
+        return SuccessfulLogin;
+    }
+
+    void listClients(String User) {
+        
+    }
+
+    void registerBid(long BidHash, float Value, String User) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    boolean loginUser(String user, String password) {
+    void registerAuction(String User, String String) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    void listClients(String string) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    void registerBid(long hash, float value, String user) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    void registerAuction(String user, String string) {
+    void endAuction(String User, long AuctionCode) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
