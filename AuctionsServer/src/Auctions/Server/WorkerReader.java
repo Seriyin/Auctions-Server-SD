@@ -5,6 +5,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 /** 
@@ -37,7 +39,7 @@ public class WorkerReader implements Runnable
         this.WorkerClientsManager=WorkerClientsManager;
     }
 
-    private BufferedReader initReaderToSocket(Socket SocketToRead) 
+    private BufferedReader initReaderFromSocket(Socket SocketToRead) 
     {
         InputStream strm;
         try 
@@ -52,16 +54,27 @@ public class WorkerReader implements Runnable
                         (new InputStreamReader(strm));
     }
     
+    private PrintWriter initWriterToSocket(Socket SocketToWrite) 
+    {
+        OutputStream strm;
+        try 
+        {
+            strm = SocketToWrite.getOutputStream();            
+        }
+        catch(IOException e) 
+        {
+            return null;
+        }
+        return new PrintWriter(strm);
+    }
+
+    
     @Override
     public void run() 
     {
         System.out.println("Worker Reader Start");
-        if ((SocketInput=initReaderToSocket(SocketToRead))==null)
-        {
-            return;
-        }
         boolean successfulLogin;
-        successfulLogin=attemptLogin();
+        successfulLogin=initAndLogin();
         if (successfulLogin) 
         {
             String str;
@@ -80,6 +93,7 @@ public class WorkerReader implements Runnable
         try
         {
             SocketToRead.close();
+            
         }
         catch (IOException e) 
         {
@@ -87,10 +101,30 @@ public class WorkerReader implements Runnable
         }
     }
 
+    private boolean initAndLogin() 
+    {
+        boolean bFailureToReadWriteSocket=false;
+        PrintWriter SocketOutput;
+        SocketOutput = initWriterToSocket(SocketToRead);
+        SocketInput = initReaderFromSocket(SocketToRead);
+        if (SocketInput==null || SocketOutput==null)
+        {
+            bFailureToReadWriteSocket=true;
+        }
+        if (bFailureToReadWriteSocket) 
+        {
+            return !bFailureToReadWriteSocket;
+        }
+        else 
+        {
+            return attemptLogin(SocketOutput);
+        }
+    }
+    
     /** A login is indicate by a 0.
      * A registration is indicated by not a 0. Implementation dependent.
     */
-    private boolean attemptLogin() 
+    private boolean attemptLogin(PrintWriter SocketOutput) 
     {
         boolean SuccessfulLogin=false;
         try 
@@ -109,14 +143,16 @@ public class WorkerReader implements Runnable
                         SuccessfulLogin=
                             WorkerClientsManager.loginUser(User,
                                                            Password,
-                                                           SocketToRead);
+                                                           SocketToRead,
+                                                           SocketOutput);
                     }
                     else
                     {
                         SuccessfulLogin=
                             WorkerClientsManager.registerUser(User,
                                                               Password,
-                                                              SocketToRead);
+                                                              SocketToRead,
+                                                              SocketOutput);
                     }
                 }
             }

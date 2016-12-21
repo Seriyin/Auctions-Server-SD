@@ -5,6 +5,9 @@
  */
 package Auctions.Server;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.List;
@@ -25,9 +28,13 @@ import java.util.concurrent.Executors;
  * @author Andre
  */
 public class ClientsManager {
-    //To be replaced by protobuffers
+    //To be replaced by ??protobuffers??
     private final Map<String,String> Clients;
+    //For now keep both but the Sockets might not be necessary long-term
+    //Keep the outputstreams to avoid creating them every time there is a
+    //need to write.
     private final Map<String,Socket> ActiveClients;
+    private final Map<String,PrintWriter> ActiveStreams;
     private final Map<Long,List<String>> Bidders;
     private final Map<Long,String> HighestBidders;
     private final ExecutorService WriterPool;
@@ -35,13 +42,15 @@ public class ClientsManager {
     public ClientsManager() 
     {
         ActiveClients = new HashMap<>();
+        ActiveStreams = new HashMap<>();
         Bidders = new HashMap<>();
         HighestBidders = new HashMap<>();
         Clients = new HashMap<>();
         WriterPool = Executors.newFixedThreadPool(2048);
     }
 
-    boolean registerUser(String User, String Password,Socket RequestSocket) 
+    boolean registerUser(String User, String Password,
+                         Socket RequestSocket, PrintWriter SocketOutput) 
     {
         boolean SuccessfulRegistration=true;
         synchronized(this.Clients) 
@@ -49,7 +58,8 @@ public class ClientsManager {
             if (Clients.containsKey(User)) 
             {
                 //In deployment should have a localization layer.
-                WriterPool.submit(new WorkerWriter("Utilizador já registado",RequestSocket));
+                WriterPool.submit(new WorkerWriter("Utilizador já registado",
+                                                   SocketOutput));
                 SuccessfulRegistration =false;
             }
             Clients.put(User, Password);
@@ -58,10 +68,15 @@ public class ClientsManager {
         {
             ActiveClients.put(User, RequestSocket);
         }
+        synchronized(this.ActiveStreams)
+        {
+            ActiveStreams.put(User, SocketOutput);
+        }        
         return SuccessfulRegistration;
     }
 
-    boolean loginUser(String User, String Password,Socket RequestSocket) 
+    boolean loginUser(String User, String Password, 
+                      Socket RequestSocket, PrintWriter SocketOutput) 
     {
         boolean SuccessfulLogin = true;
         synchronized(this.Clients) 
@@ -69,27 +84,34 @@ public class ClientsManager {
             if (!Clients.containsKey(User)) 
             {
                 //In deployment should have a localization layer.
-                WriterPool.submit(new WorkerWriter("Utilizador não existe",RequestSocket));
+                WriterPool.submit(new WorkerWriter("Utilizador não existe",
+                                                   SocketOutput));
                 SuccessfulLogin=false;
             }
             else if (!Clients.get(User).equals(Password)) 
             {
-                WriterPool.submit(new WorkerWriter("Password Incorreta",RequestSocket));
+                WriterPool.submit(new WorkerWriter("Password Incorreta",
+                                                   SocketOutput));
                 SuccessfulLogin=false;
             }
         }
+        //On login register client as active and open an OutputStream
         if (SuccessfulLogin) 
         {
             synchronized(this.ActiveClients) 
             {
                 ActiveClients.put(User, RequestSocket);
             }
+            synchronized(this.ActiveStreams)
+            {
+                ActiveStreams.put(User, SocketOutput);
+            }
         }
         return SuccessfulLogin;
     }
 
     void listClients(String User) {
-        
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.        
     }
 
     void registerBid(long BidHash, float Value, String User) {
@@ -103,4 +125,6 @@ public class ClientsManager {
     void endAuction(String User, long AuctionCode) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+
 }

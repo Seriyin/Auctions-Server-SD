@@ -16,47 +16,20 @@ import java.net.Socket;
  */
 public class WorkerWriter implements Runnable {
     private final String ToWrite;
-    private final Socket SocketToWrite;
-    private PrintWriter SocketOutput;
+    private final PrintWriter SocketOutput;
 
-    WorkerWriter(String ToWrite, Socket SocketToWrite) {
+    WorkerWriter(String ToWrite, PrintWriter SocketOutput) {
         this.ToWrite=ToWrite;
-        this.SocketToWrite=SocketToWrite;
+        this.SocketOutput=SocketOutput;
     }
     
-    private PrintWriter initWriterToSocket(Socket SocketToWrite) 
-    {
-        OutputStream strm;
-        try 
-        {
-            strm = SocketToWrite.getOutputStream();            
-        }
-        catch(IOException e) 
-        {
-            return null;
-        }
-        return new PrintWriter(strm);
-    }
 
     @Override
     public void run() 
     {
+        //Debug String
         System.out.println("Worker Writer Start");
-        if ((SocketOutput=initWriterToSocket(SocketToWrite))==null)
-        {
-            return;
-        }
-        /* get things from ClientsManager and write them out
-           to socket here
-        */
-        try
-        {
-            SocketToWrite.close();
-        }
-        catch (IOException e) 
-        {
-            e.printStackTrace();
-        }
+        SocketOutput.println(ToWrite);
     }
     
 }
