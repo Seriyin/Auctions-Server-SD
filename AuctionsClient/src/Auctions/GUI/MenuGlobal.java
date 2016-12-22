@@ -29,36 +29,53 @@ public class MenuGlobal extends javax.swing.JFrame {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
-        confirm_button = new javax.swing.JButton();
-        exit_button = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        customer_auction_globalinfo_button = new javax.swing.JButton();
+        customer_auction_localinfo_button = new javax.swing.JButton();
+        customer_bid_button = new javax.swing.JButton();
+        logout_button = new javax.swing.JButton();
+        about_button = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
-        jTextArea1.setText("stuff will be here ");
+        jTextArea1.setText("\t\t\tGESTÃO DE LEILÕES (nome da empresa?)\n#1 - Duplex T3 - ID 1630263491 - 165.000€ - 23h 41min para acabar\n#2 - Porsche Cayenne - ID 125035269 - 12.000€ - 61h 43min para acabar\n(...)\n\n\nordenado por tempo, crescente, para mostrar os que têm menos TTL (ha)\n\ndepois podemos eventualmente implementar tags para filtrar por coisas em\nespecífico, tipo, \"casa\", \"veículo\", blah blah");
         jScrollPane1.setViewportView(jTextArea1);
 
-        confirm_button.setText("OK");
-        confirm_button.addActionListener(new java.awt.event.ActionListener() {
+        customer_auction_globalinfo_button.setText("Listagem geral");
+        customer_auction_globalinfo_button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                confirm_buttonActionPerformed(evt);
+                customer_auction_globalinfo_buttonActionPerformed(evt);
             }
         });
 
-        exit_button.setText("Cancelar");
+        customer_auction_localinfo_button.setText("Info de leilão");
+        customer_auction_localinfo_button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                customer_auction_localinfo_buttonActionPerformed(evt);
+            }
+        });
 
-        jButton1.setText("jButton1");
+        customer_bid_button.setText("Licitar");
+        customer_bid_button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                customer_bid_buttonActionPerformed(evt);
+            }
+        });
 
-        jButton2.setText("jButton2");
+        logout_button.setText("Terminar sessão");
+        logout_button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logout_buttonActionPerformed(evt);
+            }
+        });
 
-        jButton3.setText("jButton3");
-
-        jButton4.setText("jButton4");
+        about_button.setText("Sobre...");
+        about_button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                about_buttonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -66,52 +83,72 @@ public class MenuGlobal extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(exit_button)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(confirm_button, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton1)
-                            .addComponent(jButton2)
-                            .addComponent(jButton3)
-                            .addComponent(jButton4))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 44, Short.MAX_VALUE)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 463, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(customer_auction_globalinfo_button, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
+                        .addComponent(customer_auction_localinfo_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(customer_bid_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(logout_button)
+                    .addComponent(about_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 335, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(37, 37, 37)
-                        .addComponent(jButton1)
-                        .addGap(19, 19, 19)
-                        .addComponent(jButton2)
-                        .addGap(24, 24, 24)
-                        .addComponent(jButton3)
-                        .addGap(22, 22, 22)
-                        .addComponent(jButton4)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(confirm_button)
-                    .addComponent(exit_button))
-                .addContainerGap(20, Short.MAX_VALUE))
+                        .addComponent(customer_auction_globalinfo_button)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(customer_auction_localinfo_button)
+                        .addGap(116, 116, 116)
+                        .addComponent(customer_bid_button)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 125, Short.MAX_VALUE)
+                        .addComponent(logout_button)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(about_button))
+                    .addComponent(jScrollPane1))
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void confirm_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirm_buttonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_confirm_buttonActionPerformed
+    private void customer_auction_globalinfo_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customer_auction_globalinfo_buttonActionPerformed
+        //print the entirety of auctions available, shown as:
+        //name + id + current value + time left, everything in a single line
+    }//GEN-LAST:event_customer_auction_globalinfo_buttonActionPerformed
+
+    private void customer_auction_localinfo_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customer_auction_localinfo_buttonActionPerformed
+        //print a single auction with more information, shown as:
+        //name
+        //id
+        //last 5 bidders
+        //starting value
+        //current value
+        //buy now (high value that allows an user to instantly buy, if set available by the seller)
+        //time left
+        //more stuff?
+    }//GEN-LAST:event_customer_auction_localinfo_buttonActionPerformed
+
+    private void about_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_about_buttonActionPerformed
+        javax.swing.JOptionPane.showMessageDialog(this, "Plataforma de gestão de leilões realizada no âmbito da UC de Sistemas Distribuídos.\nTrabalho realizado por:\n- André Diogo, A75505\n- António Silva, A73827\n- Gonçalo Pereira, A74413\n\nAno lectivo de 16/17.", "Gestor de Leilões", 1);
+    }//GEN-LAST:event_about_buttonActionPerformed
+
+    private void customer_bid_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customer_bid_buttonActionPerformed
+        //popup a perguntar id
+        //popup a perguntar amount
+        //popup a perguntar se quer confirmar
+        //ps: how do I even popup???
+    }//GEN-LAST:event_customer_bid_buttonActionPerformed
+
+    private void logout_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logout_buttonActionPerformed
+        //guardar info? já é feito pelo servidor, mas double-check
+        System.exit(0);
+        //voltar ao menu login ou simplesmente fechar?
+    }//GEN-LAST:event_logout_buttonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -149,13 +186,12 @@ public class MenuGlobal extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton confirm_button;
-    private javax.swing.JButton exit_button;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
+    private javax.swing.JButton about_button;
+    private javax.swing.JButton customer_auction_globalinfo_button;
+    private javax.swing.JButton customer_auction_localinfo_button;
+    private javax.swing.JButton customer_bid_button;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JButton logout_button;
     // End of variables declaration//GEN-END:variables
 }
