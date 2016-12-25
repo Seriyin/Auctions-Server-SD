@@ -46,7 +46,7 @@ public class ClientsManager implements Observer
     
     /**
      * Gets the TemporaryLog for a given Socket.
-     * @param RequestSocket
+     * @param RequestSocket the socket attempting authentication
      * @return the corresponding TempLog.
      */
     public BlockingQueue<String> getTempLog(Socket RequestSocket)
@@ -60,7 +60,7 @@ public class ClientsManager implements Observer
     /**
      * Called by a factory to acknowledge that there is a new unauthenticated
      * user that needs a TempLog.
-     * @param RequestSocket 
+     * @param RequestSocket the socket which needs authentication
      */
     public void acknowledgeSocket(Socket RequestSocket) 
     {
@@ -74,7 +74,7 @@ public class ClientsManager implements Observer
     /**
      * When an unauthenticated user disconnects
      * remove his TempLog.
-     * @param User 
+     * @param RequestSocket the disconnected socket to remove logs for 
      */
     public void socketDisconnected(Socket RequestSocket)
     {
@@ -87,9 +87,9 @@ public class ClientsManager implements Observer
     /**
      * Attempts to register a user,
      * otherwise writes to his TempLog what went wrong
-     * @param User
-     * @param Password
-     * @param RequestSocket
+     * @param User the username to register
+     * @param Password the password to register
+     * @param RequestSocket the socket attempting authentication
      */
     public void registerUser(String User, String Password,
                          Socket RequestSocket) 
@@ -148,10 +148,10 @@ public class ClientsManager implements Observer
     /**
      * Attempts to login a user,
      * otherwise writes to his TempLog what went wrong
-     * @param User
-     * @param Password
-     * @param RequestSocket
-     * @return 
+     * @param User the username to register
+     * @param Password the password to register
+     * @param RequestSocket the socket attempting authentication
+     * @return if the login was successful
      */
     public boolean loginUser(String User, String Password, 
                       Socket RequestSocket) 
@@ -249,8 +249,9 @@ public class ClientsManager implements Observer
      * writing to the bidders when it iterates through other bidders
      * that aren't the highest at that point, but those who lose
      * won't be shown their losing bid so it doesn't matter.
-     * @param AuctionsManager
-     * @param Auction 
+     * @param AuctionsManager the AuctionsManager from which the 
+     * notification came
+     * @param Auction the Auction that just ended
      */
     private void WriteToClientLogs(AuctionsManager AuctionsManager,
                                    Auction Auction) 
@@ -300,7 +301,7 @@ public class ClientsManager implements Observer
 
     /**
      * Fetch a ClientLog for a given User.
-     * @param User
+     * @param User A client Username
      * @return The Log
      */
     private BlockingQueue<String> FetchClientLog(String User) 
@@ -315,9 +316,9 @@ public class ClientsManager implements Observer
 
     /**
      * 
-     * @param Bids
-     * @param HighestBidder
-     * @param AuctionNumber 
+     * @param Bids the Bids on the auction.
+     * @param HighestBidder the Username which won the auction.
+     * @param AuctionNumber the auction's identifier.
      */
     private void WriteToEachClient(TreeSet<Bid> Bids,
                                    String HighestBidder,
@@ -340,8 +341,8 @@ public class ClientsManager implements Observer
 
     /**
      * Generates a String to output to all auction bidder who did no win.
-     * @param HighestBidder
-     * @param AuctionNumber
+     * @param HighestBidder the username which won the auction
+     * @param AuctionNumber the auction's identifier.
      * @return 
      */
     private String CreateLosingAuctionString(String HighestBidder, long AuctionNumber) {

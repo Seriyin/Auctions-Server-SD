@@ -72,7 +72,7 @@ public class WorkerReader implements Runnable
      * A cycle of attempting to login. Fails if a socket dies before
      * a successful authentication.
      * A registration does not login a user.
-     * @return 
+     * @return if the login was successful.
      */
     private boolean attemptLogin() 
     {

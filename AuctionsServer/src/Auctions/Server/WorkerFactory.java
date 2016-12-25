@@ -19,7 +19,7 @@ import java.util.concurrent.Executors;
  * A worker factory contains an expandable thread pool
  * to 'infinitely' run new WorkerThreads for dedicated reading
  * and writing.
- * It tries to initialize input & output streams for each socket
+ * It tries to initialize input and output streams for each socket
  * before running WorkerThreads in order to be fail-fast.
  * If a socket goes bad it will necessarily be after submitting new workers.
  * @author Andre

@@ -33,10 +33,7 @@ public class Auction implements Serializable {
         return Auctioneer;
     }
     
-    /**
-     * 
-     * @return 
-     */
+
     public synchronized boolean isActive() 
     {
         return Active;
