@@ -6,18 +6,13 @@
 package Auctions.Server;
 
 import java.io.PrintWriter;
-import java.net.Socket;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Callable;
+import java.util.Observable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Every AuctionsManager is a manager for the auctions in an auction house.
@@ -27,18 +22,16 @@ import java.util.logging.Logger;
  * (such as the ending of auctions in which they participated).
  * @author Andre
  */
-public class AuctionsManager {
-    private final Map<Long,List<String>> Bidders;
-    private final Map<Long,String> HighestBidders;
-    private final Map<Long,String> Auctioneers;
+public class AuctionsManager extends Observable {
+    private long currentAuctionNumber;
+    private final Map<Long,Auction> Auctions;
     private final ExecutorService TaskPool;
     private final Map<String,PrintWriter> SharedSocketOutputs;
     
     public AuctionsManager(ExecutorService TaskPool,
                            Map<String,PrintWriter> SharedSocketOutputs) {
-        Bidders = new HashMap<>();
-        HighestBidders = new HashMap<>();
-        Auctioneers = new HashMap<>();
+        currentAuctionNumber=0;
+        Auctions = new HashMap<>();
         this.SharedSocketOutputs = SharedSocketOutputs;
         this.TaskPool = TaskPool;
     }
@@ -109,11 +102,16 @@ public class AuctionsManager {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public String registerAuction(String User, String string) {
+    public String registerAuction(String User, String Description) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-
+    public void removeAuction(long AuctionNumber) {
+        synchronized(Auctions)
+        {
+            Auctions.remove(AuctionNumber);
+        }
+    }
 
 
 }

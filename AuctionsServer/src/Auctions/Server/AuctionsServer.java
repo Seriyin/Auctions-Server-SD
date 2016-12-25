@@ -32,6 +32,7 @@ public class AuctionsServer {
         Map<String,PrintWriter> SharedSocketOutputs = new HashMap<>(); 
         ClientsManager = new ClientsManager(TaskPool,SharedSocketOutputs);
         AuctionsManager = new AuctionsManager(TaskPool,SharedSocketOutputs);
+        AuctionsManager.addObserver(ClientsManager);
         SocketWorkerFactory = new WorkerFactory();
     }
     
