@@ -6,10 +6,9 @@
 package Auctions.Server;
 
 import java.io.PrintWriter;
-import java.util.concurrent.Callable;
 
 /**
- *
+ * A simple Writer that writes non-important transient messages on request.
  * @author Andre
  */
 public class WorkerLoglessWriter implements Runnable 

@@ -6,16 +6,16 @@
 package Auctions.Server;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- *
+ * An AuctionsServer keeps a ClientsManager, an AuctionsManager 
+ * and a WorkerFactory. It keeps accepting socket connections and then
+ * asks it's factory to run Reader and Writer threads.
+ * The Manager classes are unfortunately very tightly coupled.
  * @author andre
  */
 public class AuctionsServer {
@@ -29,9 +29,8 @@ public class AuctionsServer {
     {
         ServerSocket=new ServerSocket(port);
         ExecutorService TaskPool=Executors.newFixedThreadPool(2048);
-        Map<String,PrintWriter> SharedSocketOutputs = new HashMap<>(); 
-        ClientsManager = new ClientsManager(TaskPool,SharedSocketOutputs);
-        AuctionsManager = new AuctionsManager(TaskPool,SharedSocketOutputs);
+        ClientsManager = new ClientsManager(TaskPool);
+        AuctionsManager = new AuctionsManager(TaskPool);
         AuctionsManager.addObserver(ClientsManager);
         SocketWorkerFactory = new WorkerFactory();
     }
@@ -44,7 +43,9 @@ public class AuctionsServer {
         return CurrentSocket;
     }
     
-        
+    /**
+     * Asks the worker factory to build socket workers.
+     */    
     public void runHandlingThreads() {
         SocketWorkerFactory.buildSocketWorkers(CurrentSocket, 
                                                ClientsManager,

@@ -7,7 +7,6 @@ package Auctions.Server;
 
 import java.io.PrintWriter;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.concurrent.ExecutionException;
@@ -26,29 +25,28 @@ public class AuctionsManager extends Observable {
     private long currentAuctionNumber;
     private final Map<Long,Auction> Auctions;
     private final ExecutorService TaskPool;
-    private final Map<String,PrintWriter> SharedSocketOutputs;
+    private final Map<String,PrintWriter> SocketOutputs;
     
-    public AuctionsManager(ExecutorService TaskPool,
-                           Map<String,PrintWriter> SharedSocketOutputs) {
+    public AuctionsManager(ExecutorService TaskPool) {
         currentAuctionNumber=0;
         Auctions = new HashMap<>();
-        this.SharedSocketOutputs = SharedSocketOutputs;
+        SocketOutputs = new HashMap<>();
         this.TaskPool = TaskPool;
     }
 
     public void acknowledgeOutput(String User,PrintWriter SocketOutput)
     {
-        synchronized(SharedSocketOutputs) 
+        synchronized(SocketOutputs) 
         {
-            SharedSocketOutputs.put(User,SocketOutput);
+            SocketOutputs.put(User,SocketOutput);
         }
     }
 
     public void socketDisconnected(String User) 
     {
-        synchronized(SharedSocketOutputs)
+        synchronized(SocketOutputs)
         {
-            SharedSocketOutputs.remove(User);
+            SocketOutputs.remove(User);
         }
     }
     
@@ -66,10 +64,10 @@ public class AuctionsManager extends Observable {
         Future<String> ResultString=
                 TaskPool.submit(new WorkerInputHandler(User,ToParse,this));
         PrintWriter SocketOutput=null;
-        synchronized(SharedSocketOutputs)
+        synchronized(SocketOutputs)
         {
-            if(SharedSocketOutputs.containsKey(User))
-                SocketOutput=SharedSocketOutputs.get(User);
+            if(SocketOutputs.containsKey(User))
+                SocketOutput=SocketOutputs.get(User);
         }
         if (SocketOutput!=null) 
         {

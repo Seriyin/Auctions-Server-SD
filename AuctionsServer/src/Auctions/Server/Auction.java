@@ -25,22 +25,34 @@ public class Auction implements Serializable {
     }
     
     /**
-     * This should be immutable.
+     * The Auctioneer should be immutable.
      * @return the auction's auctionner.
      */
-    public String getAuctioneer() {
+    public String getAuctioneer() 
+    {
         return Auctioneer;
+    }
+    
+    /**
+     * 
+     * @return 
+     */
+    public synchronized boolean isActive() 
+    {
+        return Active;
     }
 
     /**
-     * This should be immutable
+     * The Description should be immutable
      * @return the auction's description.
      */
-    public String getDescription() {
+    public String getDescription() 
+    {
         return Description;
     }
 
-    public synchronized TreeSet<Bid> getBids() {
+    public synchronized TreeSet<Bid> getBids() 
+    {
         return Bidders;
     }    
     
@@ -56,7 +68,7 @@ public class Auction implements Serializable {
                               else return -1;});
     }
 
-    public void flagInactive() {
+    public synchronized void flagInactive() {
         Active=false;
     }
     

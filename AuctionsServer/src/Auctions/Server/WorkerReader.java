@@ -3,10 +3,6 @@ package Auctions.Server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 
 /** 
@@ -31,7 +27,10 @@ public class WorkerReader implements Runnable
      * 
      * @param SocketToRead The client socket this worker handles
      * @param ClientsManager The ClientsManager this worker delegates 
-     * communication and sanitized input to.
+     * client-specific input to.
+     * @param AuctionsManager The AuctionsManager this worker delegates
+     * auctions-specific input to.
+     * @param SocketInput A reader over a socket input stream.
      */
     public WorkerReader(Socket SocketToRead, 
                         ClientsManager ClientsManager,
@@ -53,25 +52,11 @@ public class WorkerReader implements Runnable
         successfulLogin=attemptLogin();
         if (successfulLogin) 
         {
-            String ToParse;
-            try
-            {
-                while ((ToParse=SocketInput.readLine())!=null) 
-                {
-                    AuctionsManager.handleAuctionInput(User,
-                                                       ToParse,
-                                                       ClientsManager);
-                }
-            }
-            catch (IOException e) 
-            {
-                e.printStackTrace();
-            }
-        }    
+            attemptReads();
+        }  
         try
         {
             SocketToRead.close();
-            
         }
         catch (IOException e) 
         {
@@ -81,10 +66,14 @@ public class WorkerReader implements Runnable
 
 
     
-    
-    /** A login is indicate by a 0.
+    /**
+     * A login is indicate by a 0.
      * A registration is indicated by not a 0. Implementation dependent.
-    */
+     * A cycle of attempting to login. Fails if a socket dies before
+     * a successful authentication.
+     * A registration does not login a user.
+     * @return 
+     */
     private boolean attemptLogin() 
     {
         boolean SuccessfulLogin=false;
@@ -107,16 +96,36 @@ public class WorkerReader implements Runnable
                     }
                     else
                     {
-                        SuccessfulLogin=
-                                ClientsManager.registerUser(User,
-                                                            Password,
-                                                            SocketToRead);
+                        ClientsManager.registerUser(User,
+                                                    Password,
+                                                    SocketToRead);
                     }
                 }
             }            
         }
         catch(IOException ex) {}
         return SuccessfulLogin;
+    }
+
+    /**
+     * A cycle of attempting to read from a socket line-by-line.
+     * Fails when a socket dies.
+     * Delegates handling and parsing that input to the AuctionsManager,
+     * as a Reader does not have access to a TaskPool.
+     * Reading and parsing can be independent.
+     */
+    private void attemptReads() {
+        String ToParse;
+        try
+        {
+            while ((ToParse=SocketInput.readLine())!=null) 
+            {
+                AuctionsManager.handleAuctionInput(User,
+                                                   ToParse,
+                                                   ClientsManager);
+            }
+        }
+        catch (IOException e) {}
     }
 
     

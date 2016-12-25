@@ -6,10 +6,8 @@
 package Auctions.Server;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -20,36 +18,37 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Every ClientsManager is a manager for the clients in an auction house.
  * It manages accesses to all relevant client data.
  * Keeps temporary logs for not yet authenticated sockets for exception writing.
+ * Keeps ClientLogs as a repository for offline clients.
+ * It implements Observer so it can be notified by a AuctionsManager of when
+ * an auction ends.
  * @author Andre
  */
 public class ClientsManager implements Observer
 {
     //To be replaced by ??protobuffers??
     private final Map<String,String> Clients;
-    private final Map<String,Socket> ActiveSockets;
     private final Map<String,BlockingQueue<String>> ClientLogs;
     private final Map<Socket,BlockingQueue<String>> TempLogs;
     private final ExecutorService TaskPool;
-    private final Map<String,PrintWriter> SharedSocketOutputs;
     
-    public ClientsManager(ExecutorService TaskPool,
-                          Map<String,PrintWriter> SharedSocketOutputs) 
+    public ClientsManager(ExecutorService TaskPool) 
     {
-        ActiveSockets = new HashMap<>(256);
         Clients = new HashMap<>(2048);
         ClientLogs = new HashMap<>();
         TempLogs = new HashMap<>();
         this.TaskPool = TaskPool;
-        this.SharedSocketOutputs = SharedSocketOutputs;
     }
     
+    /**
+     * Gets the TemporaryLog for a given Socket.
+     * @param RequestSocket
+     * @return the corresponding TempLog.
+     */
     public BlockingQueue<String> getTempLog(Socket RequestSocket)
     {
         synchronized(TempLogs) 
@@ -58,6 +57,11 @@ public class ClientsManager implements Observer
         }
     }
     
+    /**
+     * Called by a factory to acknowledge that there is a new unauthenticated
+     * user that needs a TempLog.
+     * @param RequestSocket 
+     */
     public void acknowledgeSocket(Socket RequestSocket) 
     {
         synchronized(TempLogs) 
@@ -67,19 +71,29 @@ public class ClientsManager implements Observer
     }
     
 
-    public void socketDisconnected(String User)
+    /**
+     * When an unauthenticated user disconnects
+     * remove his TempLog.
+     * @param User 
+     */
+    public void socketDisconnected(Socket RequestSocket)
     {
-        synchronized(this.ActiveSockets) 
+        synchronized(TempLogs) 
         {
-            ActiveSockets.remove(User);
+            TempLogs.remove(RequestSocket);
         }
     }
 
-    
-    public boolean registerUser(String User, String Password,
+    /**
+     * Attempts to register a user,
+     * otherwise writes to his TempLog what went wrong
+     * @param User
+     * @param Password
+     * @param RequestSocket
+     */
+    public void registerUser(String User, String Password,
                          Socket RequestSocket) 
     {
-        boolean SuccessfulRegistration=true;
         boolean ClientExists;
         BlockingQueue TempLog;
         synchronized(this.TempLogs)
@@ -93,7 +107,6 @@ public class ClientsManager implements Observer
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-            SuccessfulRegistration=false;
         }
         else 
         {
@@ -112,7 +125,6 @@ public class ClientsManager implements Observer
                 {
                     ex.printStackTrace();
                 }
-                SuccessfulRegistration =false;
             }
             else 
             {
@@ -131,10 +143,16 @@ public class ClientsManager implements Observer
                 }
             }
         }
-        return SuccessfulRegistration;
     }
 
-    
+    /**
+     * Attempts to login a user,
+     * otherwise writes to his TempLog what went wrong
+     * @param User
+     * @param Password
+     * @param RequestSocket
+     * @return 
+     */
     public boolean loginUser(String User, String Password, 
                       Socket RequestSocket) 
     {
@@ -196,10 +214,6 @@ public class ClientsManager implements Observer
             //On login register client as active and open an OutputStream
             if (SuccessfulLogin) 
             {
-                synchronized(this.ActiveSockets) 
-                {
-                    ActiveSockets.put(User, RequestSocket);
-                }
                 synchronized(this.ClientLogs) 
                 {
                     ClientLogs.put(User, new LinkedBlockingQueue<>(64));
@@ -218,6 +232,12 @@ public class ClientsManager implements Observer
         return SuccessfulLogin;
     }
 
+    /**
+     * Update runs a new task to write to every ClientLog for each bidder in the
+     * received Auction. 
+     * @param o The Auctions Manager that is being observed
+     * @param arg The Auction that just ended
+     */
     @Override
     public void update(Observable o, Object arg) 
     {
@@ -229,6 +249,7 @@ public class ClientsManager implements Observer
      * writing to the bidders when it iterates through other bidders
      * that aren't the highest at that point, but those who lose
      * won't be shown their losing bid so it doesn't matter.
+     * @param AuctionsManager
      * @param Auction 
      */
     private void WriteToClientLogs(AuctionsManager AuctionsManager,
@@ -255,7 +276,7 @@ public class ClientsManager implements Observer
                                                       User,
                                                       AuctionNumber));
         }
-        //Should check before if there is a need to notify
+        //Should check before updating if there is a need to notify
         //If it fails here it's an exception
         try 
         {
@@ -277,6 +298,11 @@ public class ClientsManager implements Observer
         
     }
 
+    /**
+     * Fetch a ClientLog for a given User.
+     * @param User
+     * @return The Log
+     */
     private BlockingQueue<String> FetchClientLog(String User) 
     {
         BlockingQueue<String> Log;
@@ -287,6 +313,12 @@ public class ClientsManager implements Observer
         return Log;            
     }
 
+    /**
+     * 
+     * @param Bids
+     * @param HighestBidder
+     * @param AuctionNumber 
+     */
     private void WriteToEachClient(TreeSet<Bid> Bids,
                                    String HighestBidder,
                                    long AuctionNumber) 
@@ -306,6 +338,12 @@ public class ClientsManager implements Observer
         while(CurrentBid!=null);
     }
 
+    /**
+     * Generates a String to output to all auction bidder who did no win.
+     * @param HighestBidder
+     * @param AuctionNumber
+     * @return 
+     */
     private String CreateLosingAuctionString(String HighestBidder, long AuctionNumber) {
         StringBuilder sb=new StringBuilder();                
         sb.append(HighestBidder)
@@ -315,6 +353,12 @@ public class ClientsManager implements Observer
         return sb.toString();
     }
 
+    /**
+     * A simple task to write an Auction String to a bidder.
+     * @param ToLog A string that is possibly 
+     * being computed still asynchronously.
+     * @param CurrentBid the Bid which contains the bidder to notify.
+     */
     private void WriteToClient(Future<String> ToLog, Bid CurrentBid) 
     {
         try 

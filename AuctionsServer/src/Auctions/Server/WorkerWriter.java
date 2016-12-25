@@ -5,9 +5,6 @@
  */
 package Auctions.Server;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -15,6 +12,8 @@ import java.net.Socket;
  * Workers that write Strings from a client's log to the corresponding socket.
  * A client's log contains only important information that must remain even
  * when offline.
+ * Workers begin by writing from TempLogs on a corresponding socket before
+ * authentication.
  * @author Andre
  */
 public class WorkerWriter implements Runnable 
@@ -43,8 +42,9 @@ public class WorkerWriter implements Runnable
     {
         //Debug String
         System.out.println("Worker Writer Start");
-        
-        SocketOutput.println();
+        /**
+         * Implement here
+         */
     }
     
 }
