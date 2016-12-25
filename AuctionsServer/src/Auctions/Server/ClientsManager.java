@@ -12,118 +12,209 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Every ClientsManager is a manager for an auction house.
+ * Every ClientsManager is a manager for the clients in an auction house.
  * It manages accesses to all relevant client data.
- * It keeps a pool of threads handy to instantiate
- * WorkerFetchers which are in charge of handling String construction
- * and which later defer socket writing to its own WorkerWriters.
- * It must take care to ensure that disconnected clients will still
- * be informed of relevant events when they reconnect(such as the ending 
- * of auctions in which they participated).
+ * Keeps temporary logs for not yet authenticated sockets for exception writing.
  * @author Andre
  */
-public class ClientsManager {
+public class ClientsManager 
+{
     //To be replaced by ??protobuffers??
     private final Map<String,String> Clients;
-    //For now keep both but the Sockets might not be necessary long-term
-    //Keep the outputstreams to avoid creating them every time there is a
-    //need to write.
-    private final Map<String,Socket> ActiveClients;
-    private final Map<String,PrintWriter> ActiveStreams;
-    private final Map<Long,List<String>> Bidders;
-    private final Map<Long,String> HighestBidders;
-    private final ExecutorService WriterPool;
+    private final Map<String,Socket> ActiveSockets;
+    private final Map<String,BlockingQueue<String>> ClientLogs;
+    private final Map<Socket,BlockingQueue<String>> TempLogs;
+    private final ExecutorService TaskPool;
+    private final Map<String,PrintWriter> SharedSocketOutputs;
     
-    public ClientsManager() 
+    public ClientsManager(ExecutorService TaskPool,
+                          Map<String,PrintWriter> SharedSocketOutputs) 
     {
-        ActiveClients = new HashMap<>();
-        ActiveStreams = new HashMap<>();
-        Bidders = new HashMap<>();
-        HighestBidders = new HashMap<>();
-        Clients = new HashMap<>();
-        WriterPool = Executors.newFixedThreadPool(2048);
+        ActiveSockets = new HashMap<>(256);
+        Clients = new HashMap<>(2048);
+        ClientLogs = new HashMap<>();
+        TempLogs = new HashMap<>();
+        this.TaskPool = TaskPool;
+        this.SharedSocketOutputs = SharedSocketOutputs;
+    }
+    
+    public BlockingQueue<String> getTempLog(Socket RequestSocket)
+    {
+        synchronized(TempLogs) 
+        {
+           return TempLogs.get(RequestSocket);
+        }
+    }
+    
+    public void acknowledgeSocket(Socket RequestSocket) 
+    {
+        synchronized(TempLogs) 
+        {
+            TempLogs.put(RequestSocket, new ArrayBlockingQueue<>(64));
+        }
+    }
+    
+
+    public void socketDisconnected(String User)
+    {
+        synchronized(this.ActiveSockets) 
+        {
+            ActiveSockets.remove(User);
+        }
     }
 
-    boolean registerUser(String User, String Password,
-                         Socket RequestSocket, PrintWriter SocketOutput) 
+    
+    public boolean registerUser(String User, String Password,
+                         Socket RequestSocket) 
     {
         boolean SuccessfulRegistration=true;
-        synchronized(this.Clients) 
+        boolean ClientExists;
+        BlockingQueue TempLog;
+        synchronized(this.TempLogs)
         {
-            if (Clients.containsKey(User)) 
+            TempLog=TempLogs.get(RequestSocket);
+        }
+        if (TempLog==null) 
+        {
+            try {
+                RequestSocket.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            SuccessfulRegistration=false;
+        }
+        else 
+        {
+            synchronized(this.Clients) 
             {
-                //In deployment should have a localization layer.
-                WriterPool.submit(new WorkerWriter("Utilizador já registado",
-                                                   SocketOutput));
+                ClientExists=Clients.containsKey(User);
+            }
+            if (ClientExists) 
+            {            
+                try 
+                {
+                    //In deployment should have a localization layer.
+                    TempLog.put("Utilizador já registado");
+                } 
+                catch (InterruptedException ex) 
+                {
+                    ex.printStackTrace();
+                }
                 SuccessfulRegistration =false;
             }
-            Clients.put(User, Password);
+            else 
+            {
+                synchronized(this.Clients)
+                {
+                    Clients.put(User, Password);
+                }
+                try 
+                {
+                    //In deployment should have a localization layer.
+                    TempLog.put("Registo efetuado com sucesso");
+                } 
+                catch (InterruptedException ex) 
+                {
+                    ex.printStackTrace();
+                }
+            }
         }
-        synchronized(this.ActiveClients) 
-        {
-            ActiveClients.put(User, RequestSocket);
-        }
-        synchronized(this.ActiveStreams)
-        {
-            ActiveStreams.put(User, SocketOutput);
-        }        
         return SuccessfulRegistration;
     }
 
-    boolean loginUser(String User, String Password, 
-                      Socket RequestSocket, PrintWriter SocketOutput) 
+    
+    public boolean loginUser(String User, String Password, 
+                      Socket RequestSocket) 
     {
         boolean SuccessfulLogin = true;
-        synchronized(this.Clients) 
+        boolean ClientExists;
+        BlockingQueue TempLog;
+        synchronized(this.TempLogs)
         {
-            if (!Clients.containsKey(User)) 
-            {
-                //In deployment should have a localization layer.
-                WriterPool.submit(new WorkerWriter("Utilizador não existe",
-                                                   SocketOutput));
-                SuccessfulLogin=false;
-            }
-            else if (!Clients.get(User).equals(Password)) 
-            {
-                WriterPool.submit(new WorkerWriter("Password Incorreta",
-                                                   SocketOutput));
-                SuccessfulLogin=false;
-            }
+            TempLog=TempLogs.get(RequestSocket);
         }
-        //On login register client as active and open an OutputStream
-        if (SuccessfulLogin) 
+        if (TempLog==null) 
         {
-            synchronized(this.ActiveClients) 
-            {
-                ActiveClients.put(User, RequestSocket);
+            try {
+                RequestSocket.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
-            synchronized(this.ActiveStreams)
+            SuccessfulLogin=false;
+        }
+        else {
+            synchronized(this.Clients) 
             {
-                ActiveStreams.put(User, SocketOutput);
+                ClientExists=Clients.containsKey(User);
+            }    
+            if (!ClientExists) 
+            {
+                try 
+                {
+                    //In deployment should have a localization layer.
+                   TempLog.put("Utilizador não existe");
+                } 
+                catch (InterruptedException ex) 
+                {
+                    ex.printStackTrace();
+                }
+                SuccessfulLogin=false;
+            }
+            else 
+            { 
+                String PasswordToMatch;
+                synchronized(this.Clients) 
+                {
+                    PasswordToMatch=Clients.get(User);
+                }
+                if (PasswordToMatch.equals(Password)) 
+                {
+                    try 
+                    {
+                        //In deployment should have a localization layer.
+                        TempLog.put("Password Incorreta");
+                    }    
+                    catch (InterruptedException ex) 
+                    {
+                        ex.printStackTrace();
+                   }
+                  SuccessfulLogin=false;
+                }            
+            }
+            //On login register client as active and open an OutputStream
+            if (SuccessfulLogin) 
+            {
+                synchronized(this.ActiveSockets) 
+                {
+                    ActiveSockets.put(User, RequestSocket);
+                }
+                synchronized(this.ClientLogs) 
+                {
+                    ClientLogs.put(User, new LinkedBlockingQueue<>(64));
+                }
+                try 
+                {
+                    //In deployment should have a localization layer.
+                    TempLog.put("OK");
+                } 
+                catch (InterruptedException ex) 
+                {
+                    ex.printStackTrace();
+                }
             }
         }
         return SuccessfulLogin;
-    }
-
-    void listClients(String User) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.        
-    }
-
-    void registerBid(long BidHash, float Value, String User) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    void registerAuction(String User, String String) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    void endAuction(String User, long AuctionCode) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 

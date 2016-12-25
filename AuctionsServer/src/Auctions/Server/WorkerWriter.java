@@ -5,31 +5,46 @@
  */
 package Auctions.Server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
- * Workers that exclusively write Strings to the corresponding socket.
+ * Workers that write Strings from a client's log to the corresponding socket.
+ * A client's log contains only important information that must remain even
+ * when offline.
  * @author Andre
  */
-public class WorkerWriter implements Runnable {
-    private final String ToWrite;
+public class WorkerWriter implements Runnable 
+{
+    private final Socket SocketToWrite;
     private final PrintWriter SocketOutput;
+    private final ClientsManager ClientsManager;
+    private final AuctionsManager AuctionsManager;
 
-    WorkerWriter(String ToWrite, PrintWriter SocketOutput) {
-        this.ToWrite=ToWrite;
+    WorkerWriter(Socket SocketToWrite, 
+                 ClientsManager ClientsManager,
+                 AuctionsManager AuctionsManager,
+                 PrintWriter SocketOutput) 
+    {
+        this.SocketToWrite=SocketToWrite;
+        this.ClientsManager=ClientsManager;
+        this.AuctionsManager=AuctionsManager;
         this.SocketOutput=SocketOutput;
     }
     
+
+
 
     @Override
     public void run() 
     {
         //Debug String
         System.out.println("Worker Writer Start");
-        SocketOutput.println(ToWrite);
+        
+        SocketOutput.println();
     }
     
 }

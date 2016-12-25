@@ -6,8 +6,13 @@
 package Auctions.Server;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  *
@@ -16,12 +21,18 @@ import java.net.Socket;
 public class AuctionsServer {
     private final ServerSocket ServerSocket;
     private Socket CurrentSocket;
-    private final ClientsManager AuctionsClientsManager;
+    private final ClientsManager ClientsManager;
+    private final AuctionsManager AuctionsManager;
+    private final WorkerFactory SocketWorkerFactory;
     
     public AuctionsServer(int port) throws IOException 
     {
         ServerSocket=new ServerSocket(port);
-        AuctionsClientsManager = new ClientsManager();
+        ExecutorService TaskPool=Executors.newFixedThreadPool(2048);
+        Map<String,PrintWriter> SharedSocketOutputs = new HashMap<>(); 
+        ClientsManager = new ClientsManager(TaskPool,SharedSocketOutputs);
+        AuctionsManager = new AuctionsManager(TaskPool,SharedSocketOutputs);
+        SocketWorkerFactory = new WorkerFactory();
     }
     
     public void accept() throws IOException {
@@ -33,10 +44,10 @@ public class AuctionsServer {
     }
     
         
-    public void runThread() {
-        Thread t;
-        t = new Thread(new WorkerReader(CurrentSocket,AuctionsClientsManager));
-        t.start();
+    public void runHandlingThreads() {
+        SocketWorkerFactory.buildSocketWorkers(CurrentSocket, 
+                                               ClientsManager,
+                                               AuctionsManager);
     }
 
     /**
@@ -48,7 +59,7 @@ public class AuctionsServer {
 //            s.runMasterThread();
             while (true) {
                 s.accept();
-                s.runThread();
+                s.runHandlingThreads();
                 System.out.println("Run Thread");
             }
         }
