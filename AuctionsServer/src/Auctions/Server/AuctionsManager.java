@@ -89,7 +89,24 @@ public class AuctionsManager extends Observable {
     }
     
     public String listAuctions(String User) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        StringBuilder res=new StringBuilder(500); //will hav 2 chang 500 to whatever is the sum of the limit of each string of the bid 
+         synchronized(Auctions)
+        {
+            for (Auction value : Auctions.values()) {
+                if (value.getBids().contains(User)||User.equals(value.getAuctioneer())) {
+                    if (User.equals(value.highestBid())) {
+                        res.append("+");                   
+                    }else{
+                        if (User.equals(value.getAuctioneer())){
+                            res.append("*");                           
+                        }
+                    }
+                    res.append(String.valueOf(value.getAuctionNumber()));
+                    res.append(value.getDescription());
+                    res.append("\n");
+                }
+            }            
+        }    
     }
 
     public String registerBid(long BidHash, float ValueToBid, String User) {

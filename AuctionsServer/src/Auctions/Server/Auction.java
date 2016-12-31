@@ -69,5 +69,8 @@ public class Auction implements Serializable {
         Active=false;
     }
     
+    public synchronized String highestBid(){
+        return (this.Bidders.first()).getUser();
+    }
     
 }
