@@ -106,7 +106,10 @@ public class WorkerReader implements Runnable
                 }
             }            
         }
-        catch(IOException ex) {}
+        catch(IOException ex) 
+        {
+            ClientsManager.socketDisconnected(SocketToRead);
+        }
         return SuccessfulLogin;
     }
 
@@ -118,17 +121,17 @@ public class WorkerReader implements Runnable
      * @param Request
      * @return a boolean representing if the request was successful
      */
-    boolean postUserLogin(LoginRequest RequestToMake,
-                          SimpleQueue<LoginRequest> RequestContainer,
-                          SimpleQueue<Boolean> ExpectedResponse) 
+    private boolean postUserLogin(LoginRequest RequestToMake,
+                                  SimpleQueue<LoginRequest> RequestContainer,
+                                  SimpleQueue<Boolean> ExpectedResponse) 
     {
         RequestContainer.set(RequestToMake);
         return ExpectedResponse.get();
     }
     
     
-    void postUserRegistration(LoginRequest RequestToMake,
-                              SimpleQueue<LoginRequest> RequestContainer) 
+    private void postUserRegistration(LoginRequest RequestToMake,
+                                      SimpleQueue<LoginRequest> RequestContainer) 
     {
         RequestContainer.set(RequestToMake);
     }
@@ -146,9 +149,7 @@ public class WorkerReader implements Runnable
         {
             while ((ToParse=SocketInput.readLine())!=null) 
             {
-                AuctionsManager.postToTaskBoard(User,
-                                                ToParse,
-                                                ClientsManager);
+                ClientsManager.postToTaskBoard(User, ToParse);
             }
         }
         catch (IOException e) {}

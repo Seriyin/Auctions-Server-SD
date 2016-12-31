@@ -146,179 +146,117 @@ public class ClientsManager implements Observer
     }
 
     /**
-     * Attempts to register a user,
-     * otherwise writes to his SocketTwoWayLog what went wrong
-     * @param User the username to register
-     * @param Password the password to register
-     * @param RequestSocket the socket attempting authentication
+     * Attempts to register a user, otherwise writes to the queue of what
+     * to write to socket.
+     * @param Request the registration request
+     * @param ToWriteContainer the queue of what to write to socket
      */
-    public void registerUser(String User, String Password,
-                         Socket RequestSocket) 
+    public void registerUser(LoginRequest Request,
+                             SimpleQueue<String> ToWriteContainer) 
     {
         boolean ClientExists;
-        BlockingQueue SocketTwoWayLog;
-        synchronized(this.SocketTwoWayLogs)
+        String Username=Request.getUsername();
+        String Password;
+        synchronized(this.Clients) 
         {
-            SocketTwoWayLog=SocketTwoWayLogs.get(RequestSocket);
+            ClientExists=Clients.containsKey(Username);
         }
-        if (SocketTwoWayLog==null) 
-        {
-            try {
-                RequestSocket.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+        if (ClientExists) 
+        {            
+            //In deployment should have a localization layer.
+            ToWriteContainer.set("Utilizador já registado");
         }
         else 
         {
-            synchronized(this.Clients) 
+            Password=Request.getPassword();
+            synchronized(this.Clients)
             {
-                ClientExists=Clients.containsKey(User);
+                Clients.put(Username, Password);
             }
-            if (ClientExists) 
-            {            
-                try 
-                {
-                    //In deployment should have a localization layer.
-                    SocketTwoWayLog.put("Utilizador já registado");
-                } 
-                catch (InterruptedException ex) 
-                {
-                    ex.printStackTrace();
-                }
-            }
-            else 
-            {
-                synchronized(this.Clients)
-                {
-                    Clients.put(User, Password);
-                }
-                try 
-                {
-                    //In deployment should have a localization layer.
-                    SocketTwoWayLog.put("Registo efetuado com sucesso");
-                } 
-                catch (InterruptedException ex) 
-                {
-                    ex.printStackTrace();
-                }
-            }
+            //In deployment should have a localization layer.
+            ToWriteContainer.set("Registo efetuado com sucesso");
         }
     }
 
     /**
-     * Attempts to login a user,
-     * otherwise writes to his SocketTwoWayLog what went wrong
-     * @param User the username to register
-     * @param Password the password to register
-     * @param RequestSocket the socket attempting authentication
-     * @return if the login was successful
+     * Attempts to login a user and write an "OK" to the queue of what
+     * to write to socket, otherwise writes a response of what 
+     * went wrong to said queue.
+     * @param Request the login request
+     * @param ToWriteContainer the queue of what to write to socket
+     * @return returns a boolean expressing the success in logging in.
      */
-    public boolean loginUser(String User, String Password, 
-                      Socket RequestSocket) 
+    public boolean loginUser(LoginRequest Request, 
+                             SimpleQueue<String> ToWriteContainer) 
     {
+        String Username=Request.getUsername();
+        String Password;
         boolean SuccessfulLogin = true;
         boolean ClientExists;
-        BlockingQueue SocketTwoWayLog;
-        synchronized(this.SocketTwoWayLogs)
+        synchronized(this.Clients) 
         {
-            SocketTwoWayLog=SocketTwoWayLogs.get(RequestSocket);
-        }
-        if (SocketTwoWayLog==null) 
+            ClientExists=Clients.containsKey(Username);
+        }    
+        if (!ClientExists) 
         {
-            try {
-                RequestSocket.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            ToWriteContainer.set("Utilizador não existe");
             SuccessfulLogin=false;
         }
-        else {
+        else 
+        { 
+            Password=Request.getPassword();
+            String PasswordToMatch;
             synchronized(this.Clients) 
             {
-                ClientExists=Clients.containsKey(User);
-            }    
-            if (!ClientExists) 
+                PasswordToMatch=Clients.get(Username);
+            }
+            if (!PasswordToMatch.equals(Password)) 
             {
-                try 
-                {
-                    //In deployment should have a localization layer.
-                   SocketTwoWayLog.put("Utilizador não existe");
-                } 
-                catch (InterruptedException ex) 
-                {
-                    ex.printStackTrace();
-                }
+                //In deployment should have a localization layer.
+                ToWriteContainer.set("Password Incorreta");
                 SuccessfulLogin=false;
-            }
-            else 
-            { 
-                String PasswordToMatch;
-                synchronized(this.Clients) 
-                {
-                    PasswordToMatch=Clients.get(User);
-                }
-                if (PasswordToMatch.equals(Password)) 
-                {
-                    try 
-                    {
-                        //In deployment should have a localization layer.
-                        SocketTwoWayLog.put("Password Incorreta");
-                    }    
-                    catch (InterruptedException ex) 
-                    {
-                        ex.printStackTrace();
-                   }
-                  SuccessfulLogin=false;
-                }            
-            }
-            //On login register client as active and open an OutputStream
-            if (SuccessfulLogin) 
+            }            
+        }
+        //On login register client as active, if it's not active already
+        //otherwise kick the previous login out.
+        if (SuccessfulLogin) 
+        {
+            boolean AlreadyLoggedIn;
+            synchronized(this.ActiveSockets) 
             {
-                boolean AlreadyLoggedIn;
+                AlreadyLoggedIn = ActiveSockets.containsKey(Username);
+            }
+            if (AlreadyLoggedIn) 
+            {
+                Socket ToDisconnect;
                 synchronized(this.ActiveSockets) 
                 {
-                    AlreadyLoggedIn = ActiveSockets.containsKey(User);
-                }
-                if (AlreadyLoggedIn) 
-                {
-                    Socket ToDisconnect;
-                    synchronized(this.ActiveSockets) 
-                    {
-                        ToDisconnect = ActiveSockets.get(User);
-                    }
-                    try 
-                    {
-                        ToDisconnect.close();
-                    }
-                    catch(IOException e) 
-                    {
-                        e.printStackTrace();
-                    }
-                }
-                else 
-                {
-                    synchronized(this.ClientLogs) 
-                    {
-                        ClientLogs.put(User, new LinkedBlockingQueue<>(64));
-                    }
-                }
-                ActiveSockets.put(User, RequestSocket);
-                BlockingQueue<String> ClientTaskBoard = new ArrayBlockingQueue<>(64);
-                synchronized(this.ClientTaskBoards) 
-                {
-                    ClientTaskBoards.put(User, ClientTaskBoard);
+                    ToDisconnect = ActiveSockets.get(Username);
                 }
                 try 
                 {
-                    //In deployment should have a localization layer.
-                    SocketTwoWayLog.put("OK");
-                } 
-                catch (InterruptedException ex) 
+                    ToDisconnect.close();
+                }
+                catch(IOException e) 
                 {
-                    ex.printStackTrace();
+                    e.printStackTrace();
                 }
             }
+            else 
+            {
+                synchronized(this.ClientLogs) 
+                {
+                    ClientLogs.put(Username, new LinkedBlockingQueue<>(64));
+                }
+            }
+            ActiveSockets.put(Username, Request.getRequestSocket());
+            BlockingQueue<String> ClientTaskBoard = new ArrayBlockingQueue<>(64);
+            synchronized(this.ClientTaskBoards) 
+            {
+                ClientTaskBoards.put(Username, ClientTaskBoard);
+            }
+            //In deployment should have a localization layer.
+            ToWriteContainer.set("OK");
         }
         return SuccessfulLogin;
     }
@@ -467,7 +405,11 @@ public class ClientsManager implements Observer
         }
     }
 
-
+    
+    void postToTaskBoard(String User,
+                         String ToParse) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
 
 
