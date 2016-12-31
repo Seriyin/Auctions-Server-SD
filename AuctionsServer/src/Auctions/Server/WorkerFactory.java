@@ -40,15 +40,20 @@ public class WorkerFactory {
         PrintWriter SocketOutput = initWriterToSocket(RequestSocket);
         if (SocketInput != null && SocketOutput !=null) 
         {
+            ClientsManager.acknowledgeSocket(RequestSocket);
             ExpandableThreadPool.submit(new WorkerReader(RequestSocket,
                                                          ClientsManager,
                                                          AuctionsManager,
                                                          SocketInput));
-            ClientsManager.acknowledgeSocket(RequestSocket);
             ExpandableThreadPool.submit(new WorkerWriter(RequestSocket,
                                                          ClientsManager,
                                                          AuctionsManager,
                                                          SocketOutput));
+            ExpandableThreadPool.submit(new WorkerProcessor(RequestSocket,
+                                                            ClientsManager,
+                                                            AuctionsManager,
+                                                            SocketOutput));
+
         }
     }
     

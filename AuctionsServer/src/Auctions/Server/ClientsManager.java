@@ -33,60 +33,121 @@ public class ClientsManager implements Observer
     //To be replaced by ??protobuffers??
     private final Map<String,String> Clients;
     private final Map<String,BlockingQueue<String>> ClientLogs;
-    private final Map<Socket,BlockingQueue<String>> TempLogs;
+    private final Map<String,Socket> ActiveSockets;
+    private final Map<Socket,SimpleQueue<LoginRequest>> SocketToProcessorRequests;
+    private final Map<Socket,SimpleQueue<Boolean>> ProcessorToSocketResponses;
+    private final Map<Socket,SimpleQueue<String>> ProcessorToWriterRequests;
+    private final Map<String,BlockingQueue<String>> ClientTaskBoards;
     private final ExecutorService TaskPool;
     
     public ClientsManager(ExecutorService TaskPool) 
     {
         Clients = new HashMap<>(2048);
         ClientLogs = new HashMap<>();
-        TempLogs = new HashMap<>();
+        ActiveSockets= new HashMap<>();
+        SocketToProcessorRequests = new HashMap<>();
+        ProcessorToWriterRequests = new HashMap<>();
+        ProcessorToSocketResponses = new HashMap<>();
+        ClientTaskBoards = new HashMap<>();
         this.TaskPool = TaskPool;
     }
     
     /**
-     * Gets the TemporaryLog for a given Socket.
+     * Gets the SocketToProcessorRequest for a given Socket.
      * @param RequestSocket the socket attempting authentication
-     * @return the corresponding TempLog.
+     * @return the corresponding SocketToProcessorRequest.
      */
-    public BlockingQueue<String> getTempLog(Socket RequestSocket)
+    protected SimpleQueue<LoginRequest> getSocketToProcessorRequest(Socket RequestSocket)
     {
-        synchronized(TempLogs) 
+        synchronized(SocketToProcessorRequests) 
         {
-           return TempLogs.get(RequestSocket);
+           return SocketToProcessorRequests.get(RequestSocket);
+        }
+    }
+
+    /**
+     * Gets the ProcessorToSocketResponse for a given Socket.
+     * @param RequestSocket the socket attempting authentication
+     * @return the corresponding ProcessorToSocketResponse.
+     */
+    protected SimpleQueue<Boolean> getProcessorToSocketResponse(Socket RequestSocket)
+    {
+        synchronized(ProcessorToSocketResponses) 
+        {
+           return ProcessorToSocketResponses.get(RequestSocket);
         }
     }
     
     /**
+     * Gets the ProcessorToWriterRequest for a given Socket.
+     * @param RequestSocket the socket attempting authentication
+     * @return the corresponding ProcessorToWriterRequest.
+     */
+    protected SimpleQueue<String> getProcessorToWriterRequest(Socket RequestSocket)
+    {
+        synchronized(ProcessorToWriterRequests) 
+        {
+           return ProcessorToWriterRequests.get(RequestSocket);
+        }
+    }
+
+    
+    /**
      * Called by a factory to acknowledge that there is a new unauthenticated
-     * user that needs a TempLog.
+     * user that needs a ProcessorToWriterRequest queue, a
+     * SocketToProcessorRequests queue and a ProcessorToSocketResponses queue.
      * @param RequestSocket the socket which needs authentication
      */
-    public void acknowledgeSocket(Socket RequestSocket) 
+    protected void acknowledgeSocket(Socket RequestSocket) 
     {
-        synchronized(TempLogs) 
+        synchronized(SocketToProcessorRequests) 
         {
-            TempLogs.put(RequestSocket, new ArrayBlockingQueue<>(64));
+            SocketToProcessorRequests.put(RequestSocket, new SimpleQueue<>());
+        }
+        synchronized(ProcessorToSocketResponses) 
+        {
+            ProcessorToSocketResponses.put(RequestSocket, new SimpleQueue<>());
+        }
+        synchronized(ProcessorToWriterRequests) 
+        {
+            ProcessorToWriterRequests.put(RequestSocket, new SimpleQueue<>());
         }
     }
     
 
     /**
      * When an unauthenticated user disconnects
-     * remove his TempLog.
+     * remove his Request queues.
      * @param RequestSocket the disconnected socket to remove logs for 
      */
-    public void socketDisconnected(Socket RequestSocket)
+    protected void socketDisconnected(Socket RequestSocket)
     {
-        synchronized(TempLogs) 
+        synchronized(ProcessorToWriterRequests) 
         {
-            TempLogs.remove(RequestSocket);
+            if(ProcessorToWriterRequests.containsKey(RequestSocket)) 
+            {
+                ProcessorToWriterRequests.remove(RequestSocket);
+            }
+        }
+        synchronized(SocketToProcessorRequests) 
+        {
+            if(SocketToProcessorRequests.containsKey(RequestSocket)) 
+            {
+                SocketToProcessorRequests.remove(RequestSocket);
+            }        
+        }
+        synchronized(ProcessorToSocketResponses) 
+        {
+            if(ProcessorToSocketResponses.containsKey(RequestSocket)) 
+            {
+                ProcessorToSocketResponses.remove(RequestSocket);
+            }        
         }
     }
 
     /**
      * Attempts to register a user,
-     * otherwise writes to his TempLog what went wrong
+     * otherwise writes to his SocketTwoWayLog what went wrong
      * @param User the username to register
      * @param Password the password to register
      * @param RequestSocket the socket attempting authentication
@@ -95,12 +156,12 @@ public class ClientsManager implements Observer
                          Socket RequestSocket) 
     {
         boolean ClientExists;
-        BlockingQueue TempLog;
-        synchronized(this.TempLogs)
+        BlockingQueue SocketTwoWayLog;
+        synchronized(this.SocketTwoWayLogs)
         {
-            TempLog=TempLogs.get(RequestSocket);
+            SocketTwoWayLog=SocketTwoWayLogs.get(RequestSocket);
         }
-        if (TempLog==null) 
+        if (SocketTwoWayLog==null) 
         {
             try {
                 RequestSocket.close();
@@ -119,7 +180,7 @@ public class ClientsManager implements Observer
                 try 
                 {
                     //In deployment should have a localization layer.
-                    TempLog.put("Utilizador já registado");
+                    SocketTwoWayLog.put("Utilizador já registado");
                 } 
                 catch (InterruptedException ex) 
                 {
@@ -135,7 +196,7 @@ public class ClientsManager implements Observer
                 try 
                 {
                     //In deployment should have a localization layer.
-                    TempLog.put("Registo efetuado com sucesso");
+                    SocketTwoWayLog.put("Registo efetuado com sucesso");
                 } 
                 catch (InterruptedException ex) 
                 {
@@ -147,7 +208,7 @@ public class ClientsManager implements Observer
 
     /**
      * Attempts to login a user,
-     * otherwise writes to his TempLog what went wrong
+     * otherwise writes to his SocketTwoWayLog what went wrong
      * @param User the username to register
      * @param Password the password to register
      * @param RequestSocket the socket attempting authentication
@@ -158,12 +219,12 @@ public class ClientsManager implements Observer
     {
         boolean SuccessfulLogin = true;
         boolean ClientExists;
-        BlockingQueue TempLog;
-        synchronized(this.TempLogs)
+        BlockingQueue SocketTwoWayLog;
+        synchronized(this.SocketTwoWayLogs)
         {
-            TempLog=TempLogs.get(RequestSocket);
+            SocketTwoWayLog=SocketTwoWayLogs.get(RequestSocket);
         }
-        if (TempLog==null) 
+        if (SocketTwoWayLog==null) 
         {
             try {
                 RequestSocket.close();
@@ -182,7 +243,7 @@ public class ClientsManager implements Observer
                 try 
                 {
                     //In deployment should have a localization layer.
-                   TempLog.put("Utilizador não existe");
+                   SocketTwoWayLog.put("Utilizador não existe");
                 } 
                 catch (InterruptedException ex) 
                 {
@@ -202,7 +263,7 @@ public class ClientsManager implements Observer
                     try 
                     {
                         //In deployment should have a localization layer.
-                        TempLog.put("Password Incorreta");
+                        SocketTwoWayLog.put("Password Incorreta");
                     }    
                     catch (InterruptedException ex) 
                     {
@@ -214,14 +275,44 @@ public class ClientsManager implements Observer
             //On login register client as active and open an OutputStream
             if (SuccessfulLogin) 
             {
-                synchronized(this.ClientLogs) 
+                boolean AlreadyLoggedIn;
+                synchronized(this.ActiveSockets) 
                 {
-                    ClientLogs.put(User, new LinkedBlockingQueue<>(64));
+                    AlreadyLoggedIn = ActiveSockets.containsKey(User);
+                }
+                if (AlreadyLoggedIn) 
+                {
+                    Socket ToDisconnect;
+                    synchronized(this.ActiveSockets) 
+                    {
+                        ToDisconnect = ActiveSockets.get(User);
+                    }
+                    try 
+                    {
+                        ToDisconnect.close();
+                    }
+                    catch(IOException e) 
+                    {
+                        e.printStackTrace();
+                    }
+                }
+                else 
+                {
+                    synchronized(this.ClientLogs) 
+                    {
+                        ClientLogs.put(User, new LinkedBlockingQueue<>(64));
+                    }
+                }
+                ActiveSockets.put(User, RequestSocket);
+                BlockingQueue<String> ClientTaskBoard = new ArrayBlockingQueue<>(64);
+                synchronized(this.ClientTaskBoards) 
+                {
+                    ClientTaskBoards.put(User, ClientTaskBoard);
                 }
                 try 
                 {
                     //In deployment should have a localization layer.
-                    TempLog.put("OK");
+                    SocketTwoWayLog.put("OK");
                 } 
                 catch (InterruptedException ex) 
                 {
@@ -343,7 +434,7 @@ public class ClientsManager implements Observer
      * Generates a String to output to all auction bidder who did no win.
      * @param HighestBidder the username which won the auction
      * @param AuctionNumber the auction's identifier.
-     * @return 
+     * @return the output string
      */
     private String CreateLosingAuctionString(String HighestBidder, long AuctionNumber) {
         StringBuilder sb=new StringBuilder();                
@@ -375,6 +466,10 @@ public class ClientsManager implements Observer
             ex.printStackTrace();
         }
     }
+
+
+
+
 
 
 }

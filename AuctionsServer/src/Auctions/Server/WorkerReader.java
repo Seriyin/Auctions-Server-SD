@@ -76,6 +76,10 @@ public class WorkerReader implements Runnable
      */
     private boolean attemptLogin() 
     {
+        SimpleQueue<LoginRequest> RequestContainer = 
+                ClientsManager.getSocketToProcessorRequest(SocketToRead);
+        SimpleQueue<Boolean> ResponseContainer = 
+                ClientsManager.getProcessorToSocketResponse(SocketToRead);
         boolean SuccessfulLogin=false;
         try 
         { 
@@ -86,19 +90,18 @@ public class WorkerReader implements Runnable
                 if (User!=null)
                     Password=SocketInput.readLine();
                 if (Password!=null) 
-                {                    
+                {    
+                    LoginRequest Request = new LoginRequest(IsLogin,User,
+                                                      Password,SocketToRead);
                     if (IsLogin)
                     {
-                        SuccessfulLogin=
-                                ClientsManager.loginUser(User,
-                                                         Password,
-                                                         SocketToRead);
+                        SuccessfulLogin=postUserLogin(Request,
+                                                      RequestContainer,
+                                                      ResponseContainer);
                     }
                     else
                     {
-                        ClientsManager.registerUser(User,
-                                                    Password,
-                                                    SocketToRead);
+                        postUserRegistration(Request,RequestContainer);
                     }
                 }
             }            
@@ -107,6 +110,29 @@ public class WorkerReader implements Runnable
         return SuccessfulLogin;
     }
 
+    /**
+     * Reader posts LoginRequest which will be handled by a WorkerProcessor
+     * then the WorkerProcessor will give both the reader a response if the
+     * request went through and instruct the WorkerWriter to write a message
+     * to the socket.
+     * @param Request
+     * @return a boolean representing if the request was successful
+     */
+    boolean postUserLogin(LoginRequest RequestToMake,
+                          SimpleQueue<LoginRequest> RequestContainer,
+                          SimpleQueue<Boolean> ExpectedResponse) 
+    {
+        RequestContainer.set(RequestToMake);
+        return ExpectedResponse.get();
+    }
+    
+    
+    void postUserRegistration(LoginRequest RequestToMake,
+                              SimpleQueue<LoginRequest> RequestContainer) 
+    {
+        RequestContainer.set(RequestToMake);
+    }
+    
     /**
      * A cycle of attempting to read from a socket line-by-line.
      * Fails when a socket dies.
@@ -120,9 +146,9 @@ public class WorkerReader implements Runnable
         {
             while ((ToParse=SocketInput.readLine())!=null) 
             {
-                AuctionsManager.handleAuctionInput(User,
-                                                   ToParse,
-                                                   ClientsManager);
+                AuctionsManager.postToTaskBoard(User,
+                                                ToParse,
+                                                ClientsManager);
             }
         }
         catch (IOException e) {}
