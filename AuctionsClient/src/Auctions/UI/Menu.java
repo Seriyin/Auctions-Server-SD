@@ -72,14 +72,14 @@ public class Menu
         return res;
     }
     
-    
     /**
      * Método que lê um inteiro positivo.
      */
     public static int readPosInt(BufferedReader bf)
         throws IOException
     {
-        int x=0,quit=1;
+        int x=0;
+        int quit=1;
         while (quit>0) {
             try {
                 x=Integer.parseInt(bf.readLine());
@@ -96,14 +96,20 @@ public class Menu
         return x;
     }
     
-    public static Float readPosFloat(BufferedReader bf)
-            throws IOException
+    
+    /**
+     * Método que lê um inteiro positivo.
+     */
+    public static String readPosLong(BufferedReader bf)
+        throws IOException
     {
+        long x=0;
         int quit=1;
-        float x=0;
+        String LongToParse=null;
         while (quit>0) {
             try {
-                x=Float.parseFloat(bf.readLine());
+                LongToParse=bf.readLine();
+                x=Long.parseLong(LongToParse);
                 if(x>=0)
                     quit--;
                 else {
@@ -114,7 +120,30 @@ public class Menu
                 System.out.println("Número Inválido");
             }
         }
-        return x;
+        return LongToParse;
+    }
+    
+    public static String readPosFloat(BufferedReader bf)
+            throws IOException
+    {
+        int quit=1;
+        float x=0;
+        String FloatToParse=null;
+        while (quit>0) {
+            try {
+                FloatToParse=bf.readLine();
+                x=Float.parseFloat(FloatToParse);
+                if(x>=0)
+                    quit--;
+                else {
+                    System.out.println("Número Inválido");
+                }
+            }
+            catch (NumberFormatException e) {
+                System.out.println("Número Inválido");
+            }
+        }
+        return FloatToParse;
     }
 
     

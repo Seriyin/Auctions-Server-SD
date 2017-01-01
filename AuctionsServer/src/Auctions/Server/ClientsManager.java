@@ -257,7 +257,7 @@ public class ClientsManager implements Observer
         }    
         if (!ClientExists) 
         {
-            ToWriteContainer.set("Utilizador não existe");
+            ToWriteContainer.set("NOT");
             SuccessfulLogin=false;
         }
         else 
@@ -271,7 +271,7 @@ public class ClientsManager implements Observer
             if (!PasswordToMatch.equals(Password)) 
             {
                 //In deployment should have a localization layer.
-                ToWriteContainer.set("Password Incorreta");
+                ToWriteContainer.set("NOT");
                 SuccessfulLogin=false;
             }            
         }

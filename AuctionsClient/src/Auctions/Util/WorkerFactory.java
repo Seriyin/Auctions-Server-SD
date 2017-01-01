@@ -31,19 +31,16 @@ public class WorkerFactory
         BufferedReader SocketInput = initReaderFromSocket(RequestSocket);
         PrintWriter SocketOutput = initWriterToSocket(RequestSocket);
         BufferedReader SystemIn = initSystemReader();
-        PrintWriter SystemOut = initSystemWriter();
         Wrapper<String> SharedString=new Wrapper();
         if (SocketInput != null && SocketOutput !=null &&
-            SystemIn!=null && SystemOut!=null) 
+            SystemIn!=null) 
         {
             Thread Reader=new Thread (new WorkerReader(RequestSocket,
                                                        SocketInput,
-                                                       SystemOut,
                                                        SharedString));
             Thread Writer=new Thread (new WorkerWriter(RequestSocket,
                                                        SocketOutput,
                                                        SystemIn,
-                                                       SystemOut,
                                                        SharedString));
             Reader.start();
             Writer.start();
@@ -84,9 +81,5 @@ public class WorkerFactory
         return new BufferedReader(new InputStreamReader(System.in));
     }
 
-    private static PrintWriter initSystemWriter() 
-    {
-        return new PrintWriter(System.out);
-    }
 
 }

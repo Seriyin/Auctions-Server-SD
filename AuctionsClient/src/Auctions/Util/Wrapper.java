@@ -31,12 +31,22 @@ public class Wrapper<T>
     public synchronized void set(T object) 
     {
         this.object=object;
+        notify();
     }
     
     public synchronized T get() 
     {
-        T Result=object;
+        while (isNull()) 
+        { 
+            try 
+            {
+                wait();
+            } 
+            catch (InterruptedException ex) 
+            {}
+        }
+        T result=object;
         object=null;
-        return Result;
+        return result;
     }
 }
