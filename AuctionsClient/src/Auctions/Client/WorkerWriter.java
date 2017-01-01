@@ -5,8 +5,7 @@
  */
 package Auctions.Client;
 
-import Auctions.GUI.MenuGlobal;
-import Auctions.GUI.MenuLogin;
+
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -16,10 +15,18 @@ import java.net.Socket;
  * @author Andre
  */
 public class WorkerWriter implements Runnable {
+    private final Socket RequestSocket;
+    private final PrintWriter SocketOutput;
+    private final BufferedReader SystemIn;
+    private final PrintWriter SystemOut;
 
 
-    public WorkerWriter(Socket RequestSocket, PrintWriter SocketOutput) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public WorkerWriter(Socket RequestSocket, 
+                        PrintWriter SocketOutput, 
+                        BufferedReader SystemIn, 
+                        PrintWriter SystemOut) 
+    {
+
     }
 
     

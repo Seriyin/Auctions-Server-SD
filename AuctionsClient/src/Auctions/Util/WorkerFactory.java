@@ -14,8 +14,6 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import Auctions.Client.WorkerReader;
 import Auctions.Client.WorkerWriter;
-import Auctions.GUI.MenuGlobal;
-import Auctions.GUI.MenuLogin;
 
 /**
  * A worker factory contains an expandable thread pool
@@ -32,12 +30,18 @@ public class WorkerFactory
     {
         BufferedReader SocketInput = initReaderFromSocket(RequestSocket);
         PrintWriter SocketOutput = initWriterToSocket(RequestSocket);
-        if (SocketInput != null && SocketOutput !=null) 
+        BufferedReader SystemIn = initSystemReader();
+        PrintWriter SystemOut = initSystemWriter();
+        if (SocketInput != null && SocketOutput !=null &&
+            SystemIn!=null && SystemOut!=null) 
         {
             Thread Reader=new Thread (new WorkerReader(RequestSocket,
-                                                       SocketInput));
+                                                       SocketInput,
+                                                       SystemOut));
             Thread Writer=new Thread (new WorkerWriter(RequestSocket,
-                                                       SocketOutput));
+                                                       SocketOutput,
+                                                       SystemIn,
+                                                       SystemOut));
             Reader.start();
             Writer.start();
         }
@@ -70,6 +74,16 @@ public class WorkerFactory
             return null;
         }
         return new PrintWriter(strm);
+    }
+
+    private static BufferedReader initSystemReader() 
+    {
+        return new BufferedReader(new InputStreamReader(System.in));
+    }
+
+    private static PrintWriter initSystemWriter() 
+    {
+        return new PrintWriter(System.out);
     }
 
 }
