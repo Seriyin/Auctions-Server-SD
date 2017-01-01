@@ -32,16 +32,19 @@ public class WorkerFactory
         PrintWriter SocketOutput = initWriterToSocket(RequestSocket);
         BufferedReader SystemIn = initSystemReader();
         PrintWriter SystemOut = initSystemWriter();
+        Wrapper<String> SharedString=new Wrapper();
         if (SocketInput != null && SocketOutput !=null &&
             SystemIn!=null && SystemOut!=null) 
         {
             Thread Reader=new Thread (new WorkerReader(RequestSocket,
                                                        SocketInput,
-                                                       SystemOut));
+                                                       SystemOut,
+                                                       SharedString));
             Thread Writer=new Thread (new WorkerWriter(RequestSocket,
                                                        SocketOutput,
                                                        SystemIn,
-                                                       SystemOut));
+                                                       SystemOut,
+                                                       SharedString));
             Reader.start();
             Writer.start();
         }

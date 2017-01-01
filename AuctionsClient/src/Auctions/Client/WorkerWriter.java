@@ -6,6 +6,7 @@
 package Auctions.Client;
 
 
+import Auctions.Util.Wrapper;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -19,14 +20,16 @@ public class WorkerWriter implements Runnable {
     private final PrintWriter SocketOutput;
     private final BufferedReader SystemIn;
     private final PrintWriter SystemOut;
+    private final Wrapper<String> SharedString;
 
 
     public WorkerWriter(Socket RequestSocket, 
                         PrintWriter SocketOutput, 
                         BufferedReader SystemIn, 
-                        PrintWriter SystemOut) 
+                        PrintWriter SystemOut,
+                        Wrapper<String> SharedString) 
     {
-
+        
     }
 
     

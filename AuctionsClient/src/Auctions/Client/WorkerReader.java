@@ -6,6 +6,7 @@
 package Auctions.Client;
 
 
+import Auctions.Util.Wrapper;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -19,10 +20,12 @@ public class WorkerReader implements Runnable
     private final Socket RequestSocket;
     private final BufferedReader SocketInput;
     private final PrintWriter SystemOut;
+    private final Wrapper<String> SharedString;
 
     public WorkerReader(Socket RequestSocket, 
                         BufferedReader SocketInput, 
-                        PrintWriter SystemOut) 
+                        PrintWriter SystemOut,
+                        Wrapper<String> SharedString) 
     {
 
     }
