@@ -7,14 +7,16 @@ package Auctions.Client;
 
 /**
  *
- * @author Andre
+ * @author Andre Diogo, Gonçalo Pereira, António Silva
  */
-public class AuctionsClient {
+public class AuctionsClient 
+{
 
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) 
+    {
         // TODO code application logic here
     }
     

@@ -7,7 +7,7 @@ package Auctions.GUI;
 
 /**
  *
- * @author Samsung
+ * @author Andre Diogo, Gonçalo Pereira, António Silva
  */
 public class MenuLogin extends javax.swing.JFrame {
 
