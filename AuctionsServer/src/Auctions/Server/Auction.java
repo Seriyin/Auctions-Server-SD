@@ -73,4 +73,7 @@ public class Auction implements Serializable {
         return (this.Bidders.first()).getUser();
     }
     
+    public synchronized void addBid(Bid bid) {
+        Bidders.add(bid);
+    }
 }

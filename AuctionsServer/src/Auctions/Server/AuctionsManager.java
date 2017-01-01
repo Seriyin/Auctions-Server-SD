@@ -7,6 +7,7 @@ package Auctions.Server;
 
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.concurrent.ExecutionException;
@@ -88,29 +89,34 @@ public class AuctionsManager extends Observable {
         }
     }
     
-    public String listAuctions(String User) {
-        StringBuilder res=new StringBuilder(500); //will hav 2 chang 500 to whatever is the sum of the limit of each string of the bid 
+    public List<String> listAuctions(String User) {
+        List<String> res= null;
+        StringBuilder sb=new StringBuilder(500); //will hav 2 chang 500 to whatever is the sum of the limit of each string of the bid 
          synchronized(Auctions)
         {
             for (Auction value : Auctions.values()) {
                 if (value.getBids().contains(User)||User.equals(value.getAuctioneer())) {
                     if (User.equals(value.highestBid())) {
-                        res.append("+");                   
+                        sb.append("+");                   
                     }else{
                         if (User.equals(value.getAuctioneer())){
-                            res.append("*");                           
+                            sb.append("*");                           
                         }
                     }
-                    res.append(String.valueOf(value.getAuctionNumber()));
-                    res.append(value.getDescription());
-                    res.append("\n");
+                    sb.append(String.valueOf(value.getAuctionNumber()));
+                    sb.append(value.getDescription());
+                    sb.append("\n");
                 }
+                res.add(sb.toString());
             }            
         }    
+        return res;
     }
 
     public String registerBid(long BidHash, float ValueToBid, String User) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Bid b= new Bid(User,ValueToBid);
+        Auctions.get(currentAuctionNumber).addBid(b);
+        return "Licitação refistada";
     }
 
     public String endAuction(String User, long AuctionCode) {
