@@ -17,8 +17,6 @@ import java.net.Socket;
  */
 public class AuctionsClient 
 {
-    private MenuLogin MenuLogin;
-    private MenuGlobal MenuGlobal;
     private Socket ClientSocket;
 
     /**
@@ -34,16 +32,14 @@ public class AuctionsClient
         try 
         {
             ClientSocket= new Socket("localhost",9999);
-            MenuLogin= new MenuLogin();
-            MenuGlobal= new MenuGlobal();
-            WorkerFactory.buildSocketWorkers(ClientSocket,MenuLogin,MenuGlobal);
-            MenuLogin.bootMenuLogin();
+            WorkerFactory.buildSocketWorkers(ClientSocket);
         }
         catch (IOException e) 
         {
             e.printStackTrace();
         }
     }
+
     
        
 }

@@ -45,7 +45,7 @@ public class MenuGlobal extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(()->setVisible(true));
+        java.awt.EventQueue.invokeLater(()->new MenuGlobal().setVisible(true));
     }
 
     

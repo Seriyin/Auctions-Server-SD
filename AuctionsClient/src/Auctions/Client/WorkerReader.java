@@ -16,9 +16,11 @@ import java.net.Socket;
  */
 public class WorkerReader implements Runnable {
 
-    public WorkerReader(Socket RequestSocket, BufferedReader SocketInput, MenuLogin MenuLogin, MenuGlobal MenuGlobal) {
+
+    public WorkerReader(Socket RequestSocket, BufferedReader SocketInput) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
 
     @Override
     public void run() {

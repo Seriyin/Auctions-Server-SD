@@ -28,22 +28,16 @@ import Auctions.GUI.MenuLogin;
  */
 public class WorkerFactory 
 {
-    public static void buildSocketWorkers(Socket RequestSocket,
-                                          MenuLogin MenuLogin,
-                                          MenuGlobal MenuGlobal) 
+    public static void buildSocketWorkers(Socket RequestSocket) 
     {
         BufferedReader SocketInput = initReaderFromSocket(RequestSocket);
         PrintWriter SocketOutput = initWriterToSocket(RequestSocket);
         if (SocketInput != null && SocketOutput !=null) 
         {
             Thread Reader=new Thread (new WorkerReader(RequestSocket,
-                                                       SocketInput,
-                                                       MenuLogin,
-                                                       MenuGlobal));
+                                                       SocketInput));
             Thread Writer=new Thread (new WorkerWriter(RequestSocket,
-                                                       SocketInput,
-                                                       MenuLogin,
-                                                       MenuGlobal));
+                                                       SocketOutput));
             Reader.start();
             Writer.start();
         }

@@ -5,6 +5,13 @@
  */
 package Auctions.GUI;
 
+import Auctions.Client.AuctionsClient;
+import Auctions.Util.WorkerFactory;
+import java.lang.reflect.InvocationTargetException;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author André Diogo, Gonçalo Pereira, António Silva
@@ -18,7 +25,7 @@ public class MenuLogin extends javax.swing.JFrame {
         initComponents();
     }
 
-    public void bootMenuLogin() 
+    public static void bootMenuLogin(Socket RequestSocket) 
     {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -42,13 +49,11 @@ public class MenuLogin extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(MenuLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(()->setVisible(true));
-        System.out.println("I booted");
+        java.awt.EventQueue.invokeLater(()->new MenuLogin().setVisible(true));
+        WorkerFactory.buildSocketWorkers(RequestSocket);
     }
 
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
