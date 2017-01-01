@@ -18,6 +18,8 @@ public class WorkerInputHandler implements Callable<String>
     private final String ToParse;
     private final AuctionsManager AuctionsManager;
     private final String User;
+    //Currently not used but would indicate whether a string to possibly
+    //be printed on the call should go to a client log.
     private final boolean ToLog;
     
     public WorkerInputHandler(String User,
@@ -53,9 +55,9 @@ public class WorkerInputHandler implements Callable<String>
                 {
                     try
                     {
-                        long BidHash=Long.parseLong(InputSplit[1]);
+                        long AuctionCode=Long.parseLong(InputSplit[1]);
                         float ValueToBid=Float.parseFloat(InputSplit[2]);
-                        ResultString = AuctionsManager.registerBid(BidHash,
+                        ResultString = AuctionsManager.registerBid(AuctionCode,
                                                                    ValueToBid,
                                                                    User);
                     }

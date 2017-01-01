@@ -44,12 +44,11 @@ public class Auction implements Serializable {
     {
         return Active;
     }
-    
-    public synchronized void setInnactive() 
-    {
-        this.Active=false; 
-    }    
 
+    public synchronized void flagInactive() {
+        Active=false;
+    }
+    
     /**
      * The Description should be immutable
      * @return the auction's description.
@@ -76,50 +75,81 @@ public class Auction implements Serializable {
                               else return -1;});
     }
 
-    public synchronized void flagInactive() {
-        Active=false;
+
+    /**
+     * A poll for highestBidder should only synchronize on the bidders.
+     * @return the user who is the highest bidder.
+     */
+    public String highestBidder()
+    {
+        Bid HighestBid=null;
+        String Result=null;
+        synchronized(Bidders) 
+        {
+            if (!Bidders.isEmpty()) 
+            {
+                HighestBid=Bidders.first();
+            }
+        }
+        if (HighestBid!=null)
+        {
+            Result=HighestBid.getUser();
+        }
+        return Result;
     }
     
-    public synchronized String highestBid(){
-        return (this.Bidders.first()).getUser();
+    /**
+     * Fetches a User's current bid, if he has one
+     * @param User the user to get his bid.
+     * @return his most current bid.
+     */
+    public Bid getBid(String User) 
+    {
+        synchronized (Bidders) 
+        {
+            return Bidders.stream()
+                          .filter(b->b.getUser().equals(User))
+                          .findFirst()
+                          .orElse(null);
+        }
     }
     
     /**
      * Returns an indication of if the bid was lower than one already
      * registered for the given user.
-     * @param bid The bid to register
-     * @return if the bid was lower
+     * Synchronizes on the auction so no one can flag a bid as inactive
+     * until a bid has been finished.
+     * @param bid The bid to register.
+     * @return if the bid was lower.
+     * @throws Auctions.Server.InactiveAuctionException in case an auction
+     * as already finished.
      */
-    public synchronized boolean addBid(Bid bid) 
+    public synchronized boolean addBid(Bid bid) throws InactiveAuctionException 
     {
         boolean LowerBid = false;
-        Bid ExistingBid=null;
-        synchronized (Bidders) 
+        if(isActive()) 
         {
-            for(Bid b : Bidders) 
+            Bid ExistingBid=getBid(bid.getUser());
+            if (ExistingBid==null) 
             {
-                if (b.getUser().equals(bid.getUser()))
+                synchronized(Bidders) 
                 {
-                    ExistingBid=b;
-                    break;
-                }
+                    Bidders.add(bid);
+                }                
             }
-        }
-        if (ExistingBid==null) 
-        {
-            synchronized(Bidders) 
+            else 
             {
-                Bidders.add(bid);
-            }                
+                LowerBid=ExistingBid.updateBid(bid.getBid());
+            }
         }
         else 
         {
-            LowerBid=ExistingBid.updateBid(bid.getBid());
+            throw new InactiveAuctionException();
         }
         return LowerBid;
     }
     
-    public synchronized boolean isBidder(String User) 
+    public boolean isBidder(String User) 
     {
         synchronized(Bidders) 
         {

@@ -297,9 +297,11 @@ public class ClientsManager implements Observer
      * @param arg The Auction that just ended
      */
     @Override
-    public void update(Observable o, Object arg) 
+    public void update(Observable o, Object arg)
     {
-        TaskPool.submit(()->WriteToClientLogs((AuctionsManager)o,(Auction)arg));
+        //Throws a runtime exception if the Auction is already over by the time
+        //it gets there.
+        TaskPool.submit(()->WriteToClientLogs((AuctionsManager)o,(Auction)arg));        
     }
 
     /**
@@ -314,47 +316,57 @@ public class ClientsManager implements Observer
     private void WriteToClientLogs(AuctionsManager AuctionsManager,
                                    Auction Auction) 
     {
+        boolean isStillActive=true;
         synchronized(Auction) 
         {
-            Auction.flagInactive();
+            if(isStillActive=Auction.isActive()) 
+            {
+                Auction.flagInactive();
+            }
         }
-        long AuctionNumber=Auction.getAuctionNumber();
-        TreeSet<Bid> Bids=Auction.getBids();
-        StringBuilder sb=new StringBuilder();
-        String User;
-        Bid HighestBid;    
-        Future<BlockingQueue> Log;
-        Future<?> WriteComputationResult;
-        synchronized(Bids)
+        if (isStillActive) 
         {
-            HighestBid = Bids.pollFirst();
-            User=HighestBid.getUser();
-            Log=TaskPool.submit(()->FetchClientLog(User));
-            WriteComputationResult=
-                TaskPool.submit(()->WriteToEachClient(Bids,
-                                                      User,
-                                                      AuctionNumber));
+            long AuctionNumber=Auction.getAuctionNumber();
+            TreeSet<Bid> Bids=Auction.getBids();
+            StringBuilder sb=new StringBuilder();
+            String User;
+            Bid HighestBid;    
+            Future<BlockingQueue> Log;
+            Future<?> WriteComputationResult;
+            synchronized(Bids)
+            {
+                HighestBid = Bids.pollFirst();
+                User=HighestBid.getUser();
+                Log=TaskPool.submit(()->FetchClientLog(User));
+                WriteComputationResult=
+                    TaskPool.submit(()->WriteToEachClient(Bids,
+                                                          User,
+                                                          AuctionNumber));
+            }
+            //Should check before updating if there is a need to notify
+            //If it fails here it's an exception
+            try 
+            {
+                sb.append("Ganhou o leilão ")
+                  .append(AuctionNumber)
+                  .append(", ")
+                  .append(User)
+                  .append(" com a proposta de ")
+                  .append(HighestBid.getBid());
+                Log.get().add(sb.toString());
+                WriteComputationResult.get();
+                AuctionsManager.removeAuction(AuctionNumber);
+            } 
+            catch (InterruptedException 
+                    | ExecutionException | NullPointerException ex) 
+            {
+                ex.printStackTrace();
+            }
         }
-        //Should check before updating if there is a need to notify
-        //If it fails here it's an exception
-        try 
+        else 
         {
-            sb.append("Ganhou o leilão ")
-              .append(AuctionNumber)
-              .append(", ")
-              .append(User)
-              .append(" com a proposta de ")
-              .append(HighestBid.getBid());
-            Log.get().add(sb.toString());
-            WriteComputationResult.get();
-            AuctionsManager.removeAuction(AuctionNumber);
-        } 
-        catch (InterruptedException 
-                | ExecutionException | NullPointerException ex) 
-        {
-            ex.printStackTrace();
+            throw new InactiveAuctionException();
         }
-        
     }
 
     /**
