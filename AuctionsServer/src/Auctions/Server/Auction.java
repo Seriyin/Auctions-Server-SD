@@ -38,6 +38,11 @@ public class Auction implements Serializable {
     {
         return Active;
     }
+    
+    public synchronized void setInnactive() 
+    {
+        this.Active=false; 
+    }    
 
     /**
      * The Description should be immutable
