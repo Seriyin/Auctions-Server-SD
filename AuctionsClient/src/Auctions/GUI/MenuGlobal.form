@@ -25,17 +25,16 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="customer_auction_globalinfo_button" pref="107" max="32767" attributes="0"/>
-                      <Component id="customer_auction_localinfo_button" alignment="0" max="32767" attributes="0"/>
-                      <Component id="customer_bid_button" alignment="0" max="32767" attributes="0"/>
-                  </Group>
-                  <Component id="logout_button" alignment="0" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="list_auctions_button" pref="0" max="32767" attributes="0"/>
+                  <Component id="create_bid_button" alignment="0" max="32767" attributes="0"/>
                   <Component id="about_button" alignment="0" max="32767" attributes="0"/>
+                  <Component id="logout_button" alignment="0" pref="159" max="32767" attributes="0"/>
+                  <Component id="create_auction_button" alignment="0" max="32767" attributes="0"/>
+                  <Component id="end_auction_button" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jScrollPane1" pref="643" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" pref="615" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -46,12 +45,14 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="customer_auction_globalinfo_button" min="-2" max="-2" attributes="0"/>
+                      <Component id="list_auctions_button" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="customer_auction_localinfo_button" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="116" max="-2" attributes="0"/>
-                      <Component id="customer_bid_button" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="125" max="32767" attributes="0"/>
+                      <Component id="create_bid_button" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="93" max="-2" attributes="0"/>
+                      <Component id="create_auction_button" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="end_auction_button" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="110" max="32767" attributes="0"/>
                       <Component id="logout_button" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="about_button" min="-2" max="-2" attributes="0"/>
@@ -75,33 +76,25 @@
           <Properties>
             <Property name="columns" type="int" value="20"/>
             <Property name="rows" type="int" value="5"/>
-            <Property name="text" type="java.lang.String" value="&#x9;&#x9;&#x9;GEST&#xc3;O DE LEIL&#xd5;ES (nome da empresa?)&#xa;#1 - Duplex T3 - ID 1630263491 - 165.000&#x20ac; - 23h 41min para acabar&#xa;#2 - Porsche Cayenne - ID 125035269 - 12.000&#x20ac; - 61h 43min para acabar&#xa;(...)&#xa;&#xa;&#xa;ordenado por tempo, crescente, para mostrar os que t&#xea;m menos TTL (ha)&#xa;&#xa;depois podemos eventualmente implementar tags para filtrar por coisas em&#xa;espec&#xed;fico, tipo, &quot;casa&quot;, &quot;ve&#xed;culo&quot;, blah blah"/>
+            <Property name="text" type="java.lang.String" value="&#x9;&#x9;&#x9;GEST&#xc3;O DE LEIL&#xd5;ES&#xa;#1 - Duplex T3 - ID 1630263491 - 165.000&#x20ac; &#xa;#2 - Porsche Cayenne - ID 125035269 - 12.000&#x20ac;&#xa;&#xa;(ordem aleat&#xf3;ria)"/>
           </Properties>
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JButton" name="customer_auction_globalinfo_button">
+    <Component class="javax.swing.JButton" name="list_auctions_button">
       <Properties>
         <Property name="text" type="java.lang.String" value="Listagem geral"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="customer_auction_globalinfo_buttonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="list_auctions_buttonActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JButton" name="customer_auction_localinfo_button">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Info de leil&#xe3;o"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="customer_auction_localinfo_buttonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="customer_bid_button">
+    <Component class="javax.swing.JButton" name="create_bid_button">
       <Properties>
         <Property name="text" type="java.lang.String" value="Licitar"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="customer_bid_buttonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="create_bid_buttonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JButton" name="logout_button">
@@ -118,6 +111,22 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="about_buttonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="create_auction_button">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Criar leil&#xe3;o"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="create_auction_buttonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="end_auction_button">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Terminar leil&#xe3;o"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="end_auction_buttonActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>
