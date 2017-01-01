@@ -18,6 +18,37 @@ public class MenuLogin extends javax.swing.JFrame {
         initComponents();
     }
 
+    public void bootMenuLogin() 
+    {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(MenuLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(MenuLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(MenuLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(MenuLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(()->setVisible(true));
+        System.out.println("I booted");
+    }
+
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -47,6 +78,7 @@ public class MenuLogin extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         exit_button = new javax.swing.JButton();
         confirm_button = new javax.swing.JButton();
+        register_button = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
 
         jMenu3.setText("File");
@@ -76,7 +108,6 @@ public class MenuLogin extends javax.swing.JFrame {
         jMenuBar5.add(jMenu11);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(600, 400));
 
         jPanel1.setPreferredSize(new java.awt.Dimension(450, 300));
 
@@ -112,6 +143,13 @@ public class MenuLogin extends javax.swing.JFrame {
             }
         });
 
+        register_button.setText("Registar");
+        register_button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                register_buttonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -129,6 +167,8 @@ public class MenuLogin extends javax.swing.JFrame {
                             .addComponent(username, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(175, 175, 175))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(register_button)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(exit_button)
                         .addGap(7, 7, 7)
                         .addComponent(confirm_button, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -148,7 +188,8 @@ public class MenuLogin extends javax.swing.JFrame {
                 .addGap(165, 165, 165)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(exit_button)
-                    .addComponent(confirm_button))
+                    .addComponent(confirm_button)
+                    .addComponent(register_button))
                 .addGap(42, 42, 42))
         );
 
@@ -196,6 +237,10 @@ public class MenuLogin extends javax.swing.JFrame {
     private void password_action(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_password_action
         //nothing to be done here either
     }//GEN-LAST:event_password_action
+
+    private void register_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_register_buttonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_register_buttonActionPerformed
  
     private boolean verifyLogin(String user, String password){
         if (user.equals("") || password.equals("")){
@@ -244,6 +289,7 @@ public class MenuLogin extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPasswordField password;
+    private javax.swing.JButton register_button;
     private javax.swing.JTextField username;
     // End of variables declaration//GEN-END:variables
 }
