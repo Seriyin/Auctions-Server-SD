@@ -162,9 +162,10 @@ public class AuctionsManager extends Observable
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public String registerAuction(String User, String Description) 
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public String registerAuction(String User, String Description) {
+        Auction a= new Auction(User,Description,generateAuctionNumber());
+        Auctions.put(a.getAuctionNumber(),a);
+        return "Novo leilão registado com sucesso";
     }
 
     public void removeAuction(long AuctionNumber) 
@@ -174,6 +175,9 @@ public class AuctionsManager extends Observable
             Auctions.remove(AuctionNumber);
         }
     }
-
+    
+    public synchronized long generateAuctionNumber (){
+        return (++this.currentAuctionNumber);
+    }
 
 }
