@@ -116,7 +116,7 @@ public class AuctionsManager extends Observable {
     public String registerBid(long BidHash, float ValueToBid, String User) {
         Bid b= new Bid(User,ValueToBid);
         Auctions.get(currentAuctionNumber).addBid(b);
-        return "Licitação refistada";
+        return "Licitação registada";
     }
 
     public String endAuction(String User, long AuctionCode) {
