@@ -144,13 +144,17 @@ public class MenuGlobal extends javax.swing.JFrame {
 
     private void create_bid_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_create_bid_buttonActionPerformed
         String id = javax.swing.JOptionPane.showInputDialog(this, "Qual o ID do leilão?", null);
-        String amount = JOptionPane.showInputDialog(this, "Quanto deseja licitar?", null);
-        int result = JOptionPane.showConfirmDialog(this, "Deseja confirmar a licitação do artigo " + id + " com o valor de " + amount + "?");
-        if(JOptionPane.YES_OPTION == result){
-            long auctionid = Long.parseLong(id);
-            float auctionamount = Float.parseFloat(amount);
-            //printa o result registerBid(auctionid, auctionamount, this.User)
-            //para o painel geral
+        if(id!=null){
+            String amount = JOptionPane.showInputDialog(this, "Quanto deseja licitar?", null);
+            if(amount!=null){
+                int result = JOptionPane.showConfirmDialog(this, "Deseja confirmar a licitação do artigo " + id + " com o valor de " + amount + "?");
+                    if(JOptionPane.YES_OPTION == result){
+                        long auctionid = Long.parseLong(id);
+                        float auctionamount = Float.parseFloat(amount);
+                        //printa o result registerBid(auctionid, auctionamount, this.User)
+                        //para o painel geral
+                    }
+            }
         }
     }//GEN-LAST:event_create_bid_buttonActionPerformed
 
