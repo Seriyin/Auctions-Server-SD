@@ -7,7 +7,7 @@ package Auctions.Client;
 
 /**
  *
- * @author Andre Diogo, Gonçalo Pereira, António Silva
+ * @author André Diogo, Gonçalo Pereira, António Silva
  */
 public class AuctionsClient 
 {
