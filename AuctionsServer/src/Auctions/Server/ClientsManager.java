@@ -37,6 +37,7 @@ public class ClientsManager implements Observer
     private final Map<Socket,SimpleQueue<LoginRequest>> SocketToProcessorRequests;
     private final Map<Socket,SimpleQueue<Boolean>> ProcessorToSocketResponses;
     private final Map<Socket,SimpleQueue<String>> ProcessorToWriterRequests;
+    private final Map<Socket,SimpleQueue<String>> ProcessorToWriterUsers;
     private final Map<String,BlockingQueue<String>> ClientTaskBoards;
     private final ExecutorService TaskPool;
     
@@ -48,8 +49,23 @@ public class ClientsManager implements Observer
         SocketToProcessorRequests = new HashMap<>();
         ProcessorToWriterRequests = new HashMap<>();
         ProcessorToSocketResponses = new HashMap<>();
+        ProcessorToWriterUsers = new HashMap<>();
         ClientTaskBoards = new HashMap<>();
         this.TaskPool = TaskPool;
+    }
+
+    /**
+     * Gets the ProcessorToWriterUser for a given Socket, so the worker writer 
+     * can be informed of the logged in user.
+     * @param RequestSocket the socket attempting authentication
+     * @return the corresponding ProcessorToWriterRequest.
+     */    
+    protected SimpleQueue<String> getProcessorToWriterUser(Socket RequestSocket)
+    {
+        synchronized(ProcessorToWriterUsers) 
+        {
+            return ProcessorToWriterUsers.get(RequestSocket);
+        } 
     }
     
     /**
@@ -112,15 +128,19 @@ public class ClientsManager implements Observer
         {
             ProcessorToWriterRequests.put(RequestSocket, new SimpleQueue<>());
         }
+        synchronized(ProcessorToWriterUsers) 
+        {
+            ProcessorToWriterUsers.put(RequestSocket, new SimpleQueue<>());
+        }
     }
     
 
     /**
-     * When an unauthenticated user disconnects
+     * When an unauthenticated user disconnects or finally logs in successfully
      * remove his Request queues.
      * @param RequestSocket the disconnected socket to remove logs for 
      */
-    protected void socketDisconnected(Socket RequestSocket)
+    protected void cleanPreLoginLogs(Socket RequestSocket)
     {
         synchronized(ProcessorToWriterRequests) 
         {
@@ -143,6 +163,13 @@ public class ClientsManager implements Observer
                 ProcessorToSocketResponses.remove(RequestSocket);
             }        
         }
+        synchronized(ProcessorToWriterUsers) 
+        {
+            if(ProcessorToWriterUsers.containsKey(RequestSocket)) 
+            {
+                ProcessorToWriterUsers.remove(RequestSocket);
+            }
+        }        
     }
 
     /**
@@ -187,7 +214,8 @@ public class ClientsManager implements Observer
      * @return returns a boolean expressing the success in logging in.
      */
     public boolean loginUser(LoginRequest Request, 
-                             SimpleQueue<String> ToWriteContainer) 
+                             SimpleQueue<String> ToWriteContainer,
+                             SimpleQueue<String> UserContainer) 
     {
         String Username=Request.getUsername();
         String Password;
@@ -257,6 +285,7 @@ public class ClientsManager implements Observer
             }
             //In deployment should have a localization layer.
             ToWriteContainer.set("OK");
+            UserContainer.set(Username);
         }
         return SuccessfulLogin;
     }
@@ -333,7 +362,7 @@ public class ClientsManager implements Observer
      * @param User A client Username
      * @return The Log
      */
-    private BlockingQueue<String> FetchClientLog(String User) 
+    protected BlockingQueue<String> FetchClientLog(String User) 
     {
         BlockingQueue<String> Log;
         synchronized(ClientLogs) 
@@ -343,6 +372,22 @@ public class ClientsManager implements Observer
         return Log;            
     }
 
+    /**
+     * Fetch a ClientLog for a given User.
+     * @param User A client Username
+     * @return The Log
+     */
+    protected BlockingQueue<String> FetchClientTaskBoard(String User) 
+    {
+        BlockingQueue<String> Log;
+        synchronized(ClientTaskBoards) 
+        {
+            Log=ClientTaskBoards.get(User);
+        }
+        return Log;
+    }
+
+    
     /**
      * 
      * @param Bids the Bids on the auction.
@@ -406,8 +451,9 @@ public class ClientsManager implements Observer
     }
 
     
-    void postToTaskBoard(String User,
-                         String ToParse) {
+    public boolean postToTaskBoard(String User,
+                                   String ToParse) 
+    {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
