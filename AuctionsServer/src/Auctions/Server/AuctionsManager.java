@@ -22,7 +22,7 @@ import java.util.concurrent.Future;
  * Does this through use of the Observer/Observable pattern. It is being
  * observed by a clients manager and notifies it whenever it is necessary to
  * write to client logs in bulk, as is the case for an auction ending.
- * @author Andre Diogo, Gonçalo Pereira, António Silva
+ * @author André Diogo, Gonçalo Pereira, António Silva
  */
 public class AuctionsManager extends Observable 
 {

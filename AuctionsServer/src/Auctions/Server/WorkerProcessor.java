@@ -12,7 +12,7 @@ import java.util.concurrent.BlockingQueue;
 
 /**
  *
- * @author Andre Diogo, Gonçalo Pereira, António Silva
+ * @author André Diogo, Gonçalo Pereira, António Silva
  */
 public class WorkerProcessor implements Runnable 
 {

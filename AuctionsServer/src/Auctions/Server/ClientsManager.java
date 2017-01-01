@@ -25,7 +25,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Keeps ClientLogs as a repository for offline clients.
  * It implements Observer so it can be notified by a AuctionsManager of when
  * an auction ends.
- * @author Andre Diogo, Gonçalo Pereira, António Silva
+ * @author André Diogo, Gonçalo Pereira, António Silva
  */
 public class ClientsManager implements Observer
 {

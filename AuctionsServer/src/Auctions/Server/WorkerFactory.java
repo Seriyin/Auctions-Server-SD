@@ -22,7 +22,7 @@ import java.util.concurrent.Executors;
  * It tries to initialize input and output streams for each socket
  * before running WorkerThreads in order to be fail-fast.
  * If a socket goes bad it will necessarily be after submitting new workers.
- * @author Andre Diogo, Gonçalo Pereira, António Silva
+ * @author André Diogo, Gonçalo Pereira, António Silva
  */
 public class WorkerFactory {
     private final ExecutorService ExpandableThreadPool;

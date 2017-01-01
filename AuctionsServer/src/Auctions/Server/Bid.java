@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 /**
  *
- * @author Andre Diogo, Gonçalo Pereira, António Silva
+ * @author André Diogo, Gonçalo Pereira, António Silva
  */
 public class Bid implements Serializable
 {

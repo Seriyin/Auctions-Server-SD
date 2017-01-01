@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  * according to if said input is clients-related or auctions-related.
  * Management of communication is delegated to its Managers as well.
  *
- * @author Andre Diogo, Gonçalo Pereira, António Silva
+ * @author André Diogo, Gonçalo Pereira, António Silva
  *
  */
 public class WorkerReader implements Runnable 

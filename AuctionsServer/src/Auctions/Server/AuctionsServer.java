@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
  * and a WorkerFactory. It keeps accepting socket connections and then
  * asks it's factory to run Reader and Writer threads.
  * The Manager classes are unfortunately very tightly coupled.
- * @author Andre Diogo, Gonçalo Pereira, António Silva
+ * @author André Diogo, Gonçalo Pereira, António Silva
  */
 public class AuctionsServer {
     private final ServerSocket ServerSocket;
