@@ -5,6 +5,8 @@
  */
 package Auctions.GUI;
 
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author Samsung
@@ -13,9 +15,14 @@ public class MenuGlobal extends javax.swing.JFrame {
 
     /**
      * Creates new form MenuGlobal
+     * @param User
      */
-    public MenuGlobal() {
+    
+    String User;
+    
+    public MenuGlobal(String User) {
         initComponents();
+        this.User = User;
     }
 
     /**
@@ -29,37 +36,31 @@ public class MenuGlobal extends javax.swing.JFrame {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
-        customer_auction_globalinfo_button = new javax.swing.JButton();
-        customer_auction_localinfo_button = new javax.swing.JButton();
-        customer_bid_button = new javax.swing.JButton();
+        list_auctions_button = new javax.swing.JButton();
+        create_bid_button = new javax.swing.JButton();
         logout_button = new javax.swing.JButton();
         about_button = new javax.swing.JButton();
+        create_auction_button = new javax.swing.JButton();
+        end_auction_button = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
-        jTextArea1.setText("\t\t\tGESTÃO DE LEILÕES (nome da empresa?)\n#1 - Duplex T3 - ID 1630263491 - 165.000€ - 23h 41min para acabar\n#2 - Porsche Cayenne - ID 125035269 - 12.000€ - 61h 43min para acabar\n(...)\n\n\nordenado por tempo, crescente, para mostrar os que têm menos TTL (ha)\n\ndepois podemos eventualmente implementar tags para filtrar por coisas em\nespecífico, tipo, \"casa\", \"veículo\", blah blah");
+        jTextArea1.setText("\t\t\tGESTÃO DE LEILÕES\n#1 - Duplex T3 - ID 1630263491 - 165.000€ \n#2 - Porsche Cayenne - ID 125035269 - 12.000€\n\n(ordem aleatória)");
         jScrollPane1.setViewportView(jTextArea1);
 
-        customer_auction_globalinfo_button.setText("Listagem geral");
-        customer_auction_globalinfo_button.addActionListener(new java.awt.event.ActionListener() {
+        list_auctions_button.setText("Listagem geral");
+        list_auctions_button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                customer_auction_globalinfo_buttonActionPerformed(evt);
+                list_auctions_buttonActionPerformed(evt);
             }
         });
 
-        customer_auction_localinfo_button.setText("Info de leilão");
-        customer_auction_localinfo_button.addActionListener(new java.awt.event.ActionListener() {
+        create_bid_button.setText("Licitar");
+        create_bid_button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                customer_auction_localinfo_buttonActionPerformed(evt);
-            }
-        });
-
-        customer_bid_button.setText("Licitar");
-        customer_bid_button.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                customer_bid_buttonActionPerformed(evt);
+                create_bid_buttonActionPerformed(evt);
             }
         });
 
@@ -77,21 +78,35 @@ public class MenuGlobal extends javax.swing.JFrame {
             }
         });
 
+        create_auction_button.setText("Criar leilão");
+        create_auction_button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                create_auction_buttonActionPerformed(evt);
+            }
+        });
+
+        end_auction_button.setText("Terminar leilão");
+        end_auction_button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                end_auction_buttonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(customer_auction_globalinfo_button, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
-                        .addComponent(customer_auction_localinfo_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(customer_bid_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(logout_button)
-                    .addComponent(about_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(list_auctions_button, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(create_bid_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(about_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(logout_button, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
+                    .addComponent(create_auction_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(end_auction_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 615, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -100,12 +115,14 @@ public class MenuGlobal extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(customer_auction_globalinfo_button)
+                        .addComponent(list_auctions_button)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(customer_auction_localinfo_button)
-                        .addGap(116, 116, 116)
-                        .addComponent(customer_bid_button)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 125, Short.MAX_VALUE)
+                        .addComponent(create_bid_button)
+                        .addGap(93, 93, 93)
+                        .addComponent(create_auction_button)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(end_auction_button)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 110, Short.MAX_VALUE)
                         .addComponent(logout_button)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(about_button))
@@ -116,39 +133,44 @@ public class MenuGlobal extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void customer_auction_globalinfo_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customer_auction_globalinfo_buttonActionPerformed
-        //print the entirety of auctions available, shown as:
-        //name + id + current value + time left, everything in a single line
-    }//GEN-LAST:event_customer_auction_globalinfo_buttonActionPerformed
-
-    private void customer_auction_localinfo_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customer_auction_localinfo_buttonActionPerformed
-        //print a single auction with more information, shown as:
-        //name
-        //id
-        //last 5 bidders
-        //starting value
-        //current value
-        //buy now (high value that allows an user to instantly buy, if set available by the seller)
-        //time left
-        //more stuff?
-    }//GEN-LAST:event_customer_auction_localinfo_buttonActionPerformed
+    private void list_auctions_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_list_auctions_buttonActionPerformed
+        //printa o result AuctionsManager.listAuctions(this.User)
+        //para o painel geral
+    }//GEN-LAST:event_list_auctions_buttonActionPerformed
 
     private void about_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_about_buttonActionPerformed
         javax.swing.JOptionPane.showMessageDialog(this, "Plataforma de gestão de leilões realizada no âmbito da UC de Sistemas Distribuídos.\nTrabalho realizado por:\n- André Diogo, A75505\n- António Silva, A73827\n- Gonçalo Pereira, A74413\n\nAno lectivo de 16/17.", "Gestor de Leilões", 1);
     }//GEN-LAST:event_about_buttonActionPerformed
 
-    private void customer_bid_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customer_bid_buttonActionPerformed
-        //popup a perguntar id
-        //popup a perguntar amount
-        //popup a perguntar se quer confirmar
-        //ps: how do I even popup???
-    }//GEN-LAST:event_customer_bid_buttonActionPerformed
+    private void create_bid_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_create_bid_buttonActionPerformed
+        String id = javax.swing.JOptionPane.showInputDialog(this, "Qual o ID do leilão?", null);
+        String amount = JOptionPane.showInputDialog(this, "Quanto deseja licitar?", null);
+        int result = JOptionPane.showConfirmDialog(this, "Deseja confirmar a licitação do artigo " + id + " com o valor de " + amount + "?");
+        if(JOptionPane.YES_OPTION == result){
+            long auctionid = Long.parseLong(id);
+            float auctionamount = Float.parseFloat(amount);
+            //printa o result registerBid(auctionid, auctionamount, this.User)
+            //para o painel geral
+        }
+    }//GEN-LAST:event_create_bid_buttonActionPerformed
 
     private void logout_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logout_buttonActionPerformed
-        //guardar info? já é feito pelo servidor, mas double-check
+        new MenuLogin();
         System.exit(0);
-        //voltar ao menu login ou simplesmente fechar?
+        //gotta figure what's wrong with not creating a new MenuLogin()
     }//GEN-LAST:event_logout_buttonActionPerformed
+
+    private void create_auction_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_create_auction_buttonActionPerformed
+        String description = javax.swing.JOptionPane.showInputDialog(this, "Qual a descrição do objeto que vai leiloar?", null);
+        //printa o result registerAuction(this.User, description)
+        //para o painel geral
+    }//GEN-LAST:event_create_auction_buttonActionPerformed
+
+    private void end_auction_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_end_auction_buttonActionPerformed
+        String auctionid = javax.swing.JOptionPane.showInputDialog(this, "Qual o ID do leilão?", null);
+        //printa o result endAuction(User, auctionid)
+        //para o painel geral
+    }//GEN-LAST:event_end_auction_buttonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -180,18 +202,22 @@ public class MenuGlobal extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new MenuGlobal().setVisible(true);
+                new MenuGlobal(null).setVisible(true);
             }
+            //gotta verify if this works nicely! the null shouldn't do much
+            //should work like: MenuLogin creates a MenuGlobal(User) after
+            //the user successfully logs in.
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton about_button;
-    private javax.swing.JButton customer_auction_globalinfo_button;
-    private javax.swing.JButton customer_auction_localinfo_button;
-    private javax.swing.JButton customer_bid_button;
+    private javax.swing.JButton create_auction_button;
+    private javax.swing.JButton create_bid_button;
+    private javax.swing.JButton end_auction_button;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JButton list_auctions_button;
     private javax.swing.JButton logout_button;
     // End of variables declaration//GEN-END:variables
 }
