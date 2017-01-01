@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
 /**
  * A worker factory contains an expandable thread pool
  * to 'infinitely' run new WorkerThreads for dedicated reading
- * and writing.
+ * and writing, makes it vulnerable to slow loris.
  * It tries to initialize input and output streams for each socket
  * before running WorkerThreads in order to be fail-fast.
  * If a socket goes bad it will necessarily be after submitting new workers.
