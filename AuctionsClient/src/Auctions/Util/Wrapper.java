@@ -22,7 +22,7 @@ public class Wrapper<T>
     {
         this.object=object;
     }
-    
+        
     public boolean isNull() 
     {
         return object!=null;

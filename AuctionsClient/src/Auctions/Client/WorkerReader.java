@@ -25,7 +25,7 @@ public class WorkerReader implements Runnable
     public WorkerReader(Socket RequestSocket, 
                         BufferedReader SocketInput, 
                         PrintWriter SystemOut,
-                        Wrapper<String> SharedString) 
+                        Wrapper<String>SharedString) 
     {
 
     }

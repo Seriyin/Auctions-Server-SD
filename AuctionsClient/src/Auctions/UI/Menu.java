@@ -13,7 +13,7 @@ public class Menu
 {
     // instance variables - replace the example below with your own
     private ArrayList<MenuFunctions> calls;
-    private StringBuilder sb;
+    private String s;
     private BufferedReader bf;
     private int choices;
 
@@ -121,9 +121,9 @@ public class Menu
     /**
      * Construtor para objetos da classe Menu
      */
-    public Menu(StringBuilder sb1,BufferedReader bf1)
+    public Menu(String s1,BufferedReader bf1)
     {
-        sb=sb1;
+        s=s1;
         calls= new ArrayList<>();
         bf=bf1;
         choices=0;
@@ -153,7 +153,7 @@ public class Menu
         Procedure p;
         InputProcedure i;
         while(quit>0) {
-            System.out.println(sb.toString());
+            System.out.println(s);
             try {
                 x=Menu.readPosInt(bf);
             }
