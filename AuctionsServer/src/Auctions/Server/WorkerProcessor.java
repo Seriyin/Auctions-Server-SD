@@ -34,18 +34,24 @@ public class WorkerProcessor implements Runnable
     @Override
     public void run() 
     {
+        //Debug String
+        System.out.println("Worker Processor Start");
         if(handleLogin())
         {
-            
+            ClientsManager.cleanPreLoginLogs(RequestSocket);
+            handleInput();
         }
     }
 
     private boolean handleLogin() 
     {
+
         SimpleQueue<LoginRequest> RequestContainer 
                 = ClientsManager.getSocketToProcessorRequest(RequestSocket);
         SimpleQueue<String> ToWriteContainer
                 = ClientsManager.getProcessorToWriterRequest(RequestSocket);
+        SimpleQueue<String> UserContainer
+                = ClientsManager.getProcessorToWriterUser(RequestSocket);
         SimpleQueue<Boolean> ResponseContainer
                 = ClientsManager.getProcessorToSocketResponse(RequestSocket);
         boolean SuccessfulLogin=false;
@@ -54,7 +60,9 @@ public class WorkerProcessor implements Runnable
             LoginRequest Request=RequestContainer.get();
             if (Request.isLogin()) 
             {
-                SuccessfulLogin=ClientsManager.loginUser(Request,ToWriteContainer);
+                SuccessfulLogin=ClientsManager.loginUser(Request,
+                                                         ToWriteContainer,
+                                                         UserContainer);
                 ResponseContainer.set(SuccessfulLogin);
             }
             else 
@@ -63,6 +71,10 @@ public class WorkerProcessor implements Runnable
             }
         }
         return RequestSocket.isClosed();
+    }
+
+    private void handleInput() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     

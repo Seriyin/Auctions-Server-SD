@@ -108,7 +108,7 @@ public class WorkerReader implements Runnable
         }
         catch(IOException ex) 
         {
-            ClientsManager.socketDisconnected(SocketToRead);
+            ClientsManager.cleanPreLoginLogs(SocketToRead);
         }
         return SuccessfulLogin;
     }
