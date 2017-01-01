@@ -19,6 +19,9 @@ import java.util.concurrent.Future;
  * It must, with WorkerWriters, take care to ensure that disconnected clients 
  * will still be informed of relevant events when they reconnect
  * (such as the ending of auctions in which they participated).
+ * Does this through use of the Observer/Observable pattern. It is being
+ * observed by a clients manager and notifies it whenever it is necessary to
+ * write to client logs in bulk, as is the case for an auction ending.
  * @author Andre
  */
 public class AuctionsManager extends Observable 
@@ -35,6 +38,12 @@ public class AuctionsManager extends Observable
         this.TaskPool = TaskPool;
     }
     
+    /**
+     * Fetches a socket output for a given client in order to supply it
+     * at runtime to it's corresponding workerwriter.
+     * @param Username the client's username
+     * @return a socket outputstream wrapped in a printwriter.
+     */
     protected PrintWriter getSocketOutput(String Username) 
     {
         PrintWriter SocketOutput = null;
@@ -48,6 +57,12 @@ public class AuctionsManager extends Observable
         return SocketOutput;
     }
 
+    /**
+     * Called on successful login by the processor who registered said login,
+     * To register an client socketoutputstream pair for later use.
+     * @param User
+     * @param SocketOutput 
+     */
     public void acknowledgeOutput(String User,PrintWriter SocketOutput)
     {
         synchronized(SocketOutputs) 
@@ -56,7 +71,13 @@ public class AuctionsManager extends Observable
         }
     }
 
-    public void socketDisconnected(String User) 
+    /**
+     * when a socketDisconnects post authentication it is necessary to remove
+     * its socket outputstream. By the time this method is called the socket
+     * should already be closed.
+     * @param User the User who disconnected.
+     */
+    public void atSocketDisconnected(String User) 
     {
         synchronized(SocketOutputs)
         {
@@ -65,15 +86,13 @@ public class AuctionsManager extends Observable
     }
     
     public void handleAuctionInput(String User,
-                                   String ToParse,
-                                   ClientsManager ClientsManager) 
+                                   String ToParse) 
     {
-        TaskPool.submit(()->handleInput(User,ToParse,ClientsManager));
+        TaskPool.submit(()->handleInput(User,ToParse));
     }
     
     private void handleInput(String User, 
-                             String ToParse,
-                             ClientsManager ClientsManager) 
+                             String ToParse) 
     {
         Future<String> ResultString=
                 TaskPool.submit(new WorkerInputHandler(User,ToParse,this));

@@ -156,4 +156,16 @@ public class Auction implements Serializable {
             return Bidders.stream().anyMatch(b->b.getUser().equals(User));
         }
     }
+
+    /**
+     * HighestBid polls the first bid. It is gone after.
+     * @return 
+     */
+    public Bid highestBid() 
+    {
+        synchronized(Bidders) 
+        {
+            return Bidders.pollFirst();
+        }
+    }
 }

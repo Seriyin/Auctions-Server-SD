@@ -4,6 +4,8 @@ package Auctions.Server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /** 
  * AuctionReaders are in charge of handling all input from clients
@@ -53,6 +55,7 @@ public class WorkerReader implements Runnable
         if (successfulLogin) 
         {
             attemptReads();
+            ClientsManager.atSocketDisconnected(User);
         }  
         try
         {
@@ -143,17 +146,45 @@ public class WorkerReader implements Runnable
      * as a Reader does not have access to a TaskPool.
      * Reading and parsing can be independent.
      */
-    private void attemptReads() {
+    private void attemptReads() 
+    {
         String ToParse;
+        BlockingQueue<String> TaskBoard = 
+                ClientsManager.FetchClientTaskBoard(User);
         try
         {
-            while ((ToParse=SocketInput.readLine())!=null) 
-            {
-                ClientsManager.postToTaskBoard(User, ToParse);
-            }
+            while ((ToParse=SocketInput.readLine())!=null 
+                    && postToTaskBoard(TaskBoard, ToParse)) 
+            {}
         }
         catch (IOException e) {}
+        TaskBoard.drainTo(null);
+        TaskBoard.offer("END");
     }
+    
+    /**
+     * Called by a reader to attempt to post an action for a processor to
+     * process in a work queue
+     * @param User The user who asked
+     * @param ToParse The string with the action to perform/process.
+     * @return if the posting was successful.
+     */
+    private boolean postToTaskBoard(BlockingQueue<String> TaskBoard,
+                                    String ToParse) 
+    {
+        boolean PostSuccess=true;
+        try 
+        {
+            PostSuccess=TaskBoard.offer(User, 4, TimeUnit.SECONDS);
+        } 
+        catch (InterruptedException ex) 
+        {
+            ex.printStackTrace();
+            PostSuccess=false;
+        }
+        return PostSuccess;
+    }
+
 
     
 

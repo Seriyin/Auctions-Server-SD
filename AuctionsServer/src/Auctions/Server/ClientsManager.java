@@ -18,6 +18,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Every ClientsManager is a manager for the clients in an auction house.
@@ -172,6 +175,37 @@ public class ClientsManager implements Observer
         }        
     }
 
+    /**
+     * Fetch a ClientLog for a given User.
+     * @param User A client Username
+     * @return The Log
+     */
+    protected BlockingQueue<String> FetchClientLog(String User) 
+    {
+        BlockingQueue<String> Log;
+        synchronized(ClientLogs) 
+        {
+            Log=ClientLogs.get(User);
+        }
+        return Log;            
+    }
+
+    /**
+     * Fetch a ClientLog for a given User.
+     * @param User A client Username
+     * @return The Log
+     */
+    protected BlockingQueue<String> FetchClientTaskBoard(String User) 
+    {
+        BlockingQueue<String> Log;
+        synchronized(ClientTaskBoards) 
+        {
+            Log=ClientTaskBoards.get(User);
+        }
+        return Log;
+    }
+
+    
     /**
      * Attempts to register a user, otherwise writes to the queue of what
      * to write to socket.
@@ -333,70 +367,45 @@ public class ClientsManager implements Observer
             Bid HighestBid;    
             Future<BlockingQueue> Log;
             Future<?> WriteComputationResult;
-            synchronized(Bids)
+            HighestBid = Auction.highestBid();
+            String Auctioneer=Auction.getAuctioneer();
+            TaskPool.submit(()->WriteToAuctioneer(Auctioneer));
+            if (HighestBid!=null)
             {
-                HighestBid = Bids.pollFirst();
+                float BidAmount=HighestBid.getBid();
                 User=HighestBid.getUser();
                 Log=TaskPool.submit(()->FetchClientLog(User));
                 WriteComputationResult=
-                    TaskPool.submit(()->WriteToEachClient(Bids,
+                    TaskPool.submit(()->WriteToEachClient(Auctioneer,
+                                                          Bids,
                                                           User,
-                                                          AuctionNumber));
-            }
-            //Should check before updating if there is a need to notify
-            //If it fails here it's an exception
-            try 
-            {
-                sb.append("Ganhou o leilão ")
-                  .append(AuctionNumber)
-                  .append(", ")
-                  .append(User)
-                  .append(" com a proposta de ")
-                  .append(HighestBid.getBid());
-                Log.get().add(sb.toString());
-                WriteComputationResult.get();
-                AuctionsManager.removeAuction(AuctionNumber);
-            } 
-            catch (InterruptedException 
-                    | ExecutionException | NullPointerException ex) 
-            {
-                ex.printStackTrace();
+                                                          AuctionNumber,
+                                                          BidAmount));
+                //Should check before updating if there is a need to notify
+                //If it fails here it's an exception
+                try 
+                {
+                    sb.append("Ganhou o leilão ")
+                      .append(AuctionNumber)
+                      .append(", ")
+                      .append(User)
+                      .append(" com a proposta de ")
+                      .append(HighestBid.getBid());
+                    Log.get().add(sb.toString());
+                    WriteComputationResult.get();
+                    AuctionsManager.removeAuction(AuctionNumber);
+                } 
+                catch (InterruptedException 
+                        | ExecutionException | NullPointerException ex) 
+                {
+                    ex.printStackTrace();
+                }
             }
         }
         else 
         {
             throw new InactiveAuctionException();
         }
-    }
-
-    /**
-     * Fetch a ClientLog for a given User.
-     * @param User A client Username
-     * @return The Log
-     */
-    protected BlockingQueue<String> FetchClientLog(String User) 
-    {
-        BlockingQueue<String> Log;
-        synchronized(ClientLogs) 
-        {
-            Log=ClientLogs.get(User);
-        }
-        return Log;            
-    }
-
-    /**
-     * Fetch a ClientLog for a given User.
-     * @param User A client Username
-     * @return The Log
-     */
-    protected BlockingQueue<String> FetchClientTaskBoard(String User) 
-    {
-        BlockingQueue<String> Log;
-        synchronized(ClientTaskBoards) 
-        {
-            Log=ClientTaskBoards.get(User);
-        }
-        return Log;
     }
 
     
@@ -406,23 +415,25 @@ public class ClientsManager implements Observer
      * @param HighestBidder the Username which won the auction.
      * @param AuctionNumber the auction's identifier.
      */
-    private void WriteToEachClient(TreeSet<Bid> Bids,
+    private void WriteToEachClient(String Auctioneer,
+                                   TreeSet<Bid> Bids,
                                    String HighestBidder,
-                                   long AuctionNumber) 
+                                   long AuctionNumber,
+                                   float BidAmount) 
     {
         final Future<String> ToLog;
         ToLog=TaskPool.submit(()->(CreateLosingAuctionString(HighestBidder,
-                                                             AuctionNumber)));
-        Bid CurrentBid;
-        do {
-            synchronized(Bids)
-            {
-                CurrentBid = Bids.pollFirst();
-            }
-            final Bid BidToTask=CurrentBid;
-            TaskPool.submit(()->(WriteToClient(ToLog,BidToTask)));
+                                                             AuctionNumber,
+                                                             BidAmount)));
+        TaskPool.submit(()->WriteToAuctioneer(Auctioneer,
+                                              HighestBidder,
+                                              AuctionNumber,
+                                              BidAmount));
+        synchronized(Bids)
+        {
+            Bids.stream().forEach(b->TaskPool.submit(()->WriteToClient(ToLog,
+                                                                       b.getUser())));
         }
-        while(CurrentBid!=null);
     }
 
     /**
@@ -431,12 +442,15 @@ public class ClientsManager implements Observer
      * @param AuctionNumber the auction's identifier.
      * @return the output string
      */
-    private String CreateLosingAuctionString(String HighestBidder, long AuctionNumber) {
+    private String CreateLosingAuctionString(String HighestBidder,
+                                             long AuctionNumber,
+                                             float BidAmount) {
         StringBuilder sb=new StringBuilder();                
         sb.append(HighestBidder)
           .append("ganhou o leilão ")
           .append(AuctionNumber)
-          .append(", em que participou");
+          .append(", em que participou com a oferta: ")
+          .append(BidAmount);
         return sb.toString();
     }
 
@@ -444,15 +458,15 @@ public class ClientsManager implements Observer
      * A simple task to write an Auction String to a bidder.
      * @param ToLog A string that is possibly 
      * being computed still asynchronously.
-     * @param CurrentBid the Bid which contains the bidder to notify.
+     * @param Bidder the Bidder to notify.
      */
-    private void WriteToClient(Future<String> ToLog, Bid CurrentBid) 
+    private void WriteToClient(Future<String> ToLog, String Bidder) 
     {
         try 
         {
-            if (CurrentBid!=null) 
+            if (Bidder!=null) 
             {
-                FetchClientLog(CurrentBid.getUser()).add(ToLog.get());
+                FetchClientLog(Bidder).put(ToLog.get());
             }
         }
         catch (InterruptedException 
@@ -461,15 +475,75 @@ public class ClientsManager implements Observer
             ex.printStackTrace();
         }
     }
-
     
-    public boolean postToTaskBoard(String User,
-                                   String ToParse) 
+
+
+    protected void atSocketDisconnected(String User) 
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        synchronized(this.ActiveSockets) 
+        {
+            ActiveSockets.remove(User);
+        }
+        synchronized(this.ClientTaskBoards) 
+        {
+            if (ClientTaskBoards.containsKey(User)) 
+            {
+                BlockingQueue<String> ClientTaskBoard=
+                        ClientTaskBoards.get(User);
+                ClientTaskBoard=null;
+            }
+            ClientTaskBoards.remove(User);
+        }
     }
 
+    /**
+     * A simple task to write an Auction String to an auctioneer.
+     * @param Auctioneer the auctioneer's username
+     */
+    private void WriteToAuctioneer(String Auctioneer) 
+    {
+        String ToLog="Leilão Terminado";
+        if (Auctioneer!=null) 
+        {
+            try 
+            {
+                FetchClientLog(Auctioneer).put(ToLog);
+            } 
+            catch (InterruptedException ex) 
+            {
+                ex.printStackTrace();
+            }
+        }
+    }
 
+    /**
+     * A simple task to write an Auction String to an auctioneer with the indication
+     * of who won the auction.
+     * @param Auctioneer the auctioneer's username
+     */
+    private void WriteToAuctioneer(String Auctioneer,
+                                   String HighestBidder,
+                                   long AuctionNumber,
+                                   float BidAmount) 
+    {
+        Future<String> ToLog=
+                TaskPool.submit(()->CreateAuctionTerminationString(HighestBidder,
+                                                                   AuctionNumber,
+                                                                   BidAmount));
+        WriteToClient(ToLog,Auctioneer);
+    }
 
+    private String CreateAuctionTerminationString(String HighestBidder,
+                                                  long AuctionNumber,
+                                                  float BidAmount) 
+    {
+        StringBuilder sb=new StringBuilder();                
+        sb.append(HighestBidder)
+          .append("ganhou o seu leilão - ")
+          .append(AuctionNumber)
+          .append(" - com a oferta de: ")
+          .append(BidAmount);
+        return sb.toString();
+    }
 
 }

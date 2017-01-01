@@ -50,11 +50,14 @@ public class WorkerWriter implements Runnable
         if(handleLogin()) 
         {
             BlockingQueue<String> Log=ClientsManager.FetchClientLog(User);
+            String CurrentString;
             while(!RequestSocket.isClosed()) 
             {
                 try 
                 {
-                    SocketOutput.println(Log.take());
+                    RequestSocket.isOutputShutdown();
+                    CurrentString = Log.take();
+                    SocketOutput.println(CurrentString);                        
                 } 
                 catch (InterruptedException ex) {}
             }
