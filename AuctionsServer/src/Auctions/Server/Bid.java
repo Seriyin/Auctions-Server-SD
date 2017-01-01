@@ -29,14 +29,16 @@ public class Bid implements Serializable
      */
     public synchronized boolean updateBid(float Bid)
     {
-        boolean IsDelayedBid=false;
+        boolean IsLowerBid=false;
         if (Bid>this.Bid) 
         {
             this.Bid=Bid;
         }
-        else
-            IsDelayedBid=true;
-        return IsDelayedBid;
+        else 
+        {
+            IsLowerBid=true;
+        }
+        return IsLowerBid;
     }
     
     /**

@@ -9,7 +9,9 @@ import java.io.Serializable;
 import java.util.TreeSet;
 
 /**
- *
+ * Right now we have to be very careful.
+ * Auctions has nested synchronization.
+ * Will have to think about it more tomorrow.
  * @author Andre
  */
 public class Auction implements Serializable {
@@ -33,6 +35,10 @@ public class Auction implements Serializable {
         return Auctioneer;
     }
     
+    public boolean isAuctioneer(String Username)
+    {
+        return Username.equals(Auctioneer);
+    }
 
     public synchronized boolean isActive() 
     {
@@ -73,7 +79,46 @@ public class Auction implements Serializable {
         return (this.Bidders.first()).getUser();
     }
     
-    public synchronized void addBid(Bid bid) {
-        Bidders.add(bid);
+    /**
+     * Returns an indication of if the bid was lower than one already
+     * registered for the given user.
+     * @param bid The bid to register
+     * @return if the bid was lower
+     */
+    public synchronized boolean addBid(Bid bid) 
+    {
+        boolean LowerBid = false;
+        Bid ExistingBid=null;
+        synchronized (Bidders) 
+        {
+            for(Bid b : Bidders) 
+            {
+                if (b.getUser().equals(bid.getUser()))
+                {
+                    ExistingBid=b;
+                    break;
+                }
+            }
+        }
+        if (ExistingBid==null) 
+        {
+            synchronized(Bidders) 
+            {
+                Bidders.add(bid);
+            }                
+        }
+        else 
+        {
+            LowerBid=ExistingBid.updateBid(bid.getBid());
+        }
+        return LowerBid;
+    }
+    
+    public synchronized boolean isBidder(String User) 
+    {
+        synchronized(Bidders) 
+        {
+            return Bidders.stream().anyMatch(b->b.getUser().equals(User));
+        }
     }
 }
