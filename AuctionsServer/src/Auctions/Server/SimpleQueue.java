@@ -8,7 +8,7 @@ package Auctions.Server;
 
 /**
  * A simple BlockingQueue which supports only blocking get and a set.
- * @author Andre
+ * @author Andre Diogo, Gonçalo Pereira, António Silva
  * @param <T> The single object to store in the queue
  */
 public final class SimpleQueue<T> 

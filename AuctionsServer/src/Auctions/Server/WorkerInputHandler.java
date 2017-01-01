@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
  * A Worker which handles parsing a unit of input (one single line of text)
  * from a socket input stream and instructing an AuctionsManager to handle
  * creating and writing a response.
- * @author Andre
+ * @author Andre Diogo, Gonçalo Pereira, António Silva
  */
 public class WorkerInputHandler implements Callable<String>
 {

@@ -12,7 +12,7 @@ import java.util.TreeSet;
  * Right now we have to be very careful.
  * Auctions has nested synchronization.
  * Will have to think about it more tomorrow.
- * @author Andre
+ * @author Andre Diogo, Gonçalo Pereira, António Silva
  */
 public class Auction implements Serializable {
     private final long AuctionNumber;

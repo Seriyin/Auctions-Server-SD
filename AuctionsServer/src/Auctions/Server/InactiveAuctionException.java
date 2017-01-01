@@ -9,7 +9,7 @@ package Auctions.Server;
  * InactiveAuctionException is a RuntimeException. Extra with it as it does
  * not need to be explicitly thrown or caught and can propagate and blow up
  * the server.
- * @author Andre
+ * @author Andre Diogo, Gonçalo Pereira, António Silva
  */
 class InactiveAuctionException extends RuntimeException {
     public String message() 

@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 
 /**
  * A simple Writer that writes non-important transient messages on request.
- * @author Andre
+ * @author Andre Diogo, Gonçalo Pereira, António Silva
  */
 public class WorkerLoglessWriter implements Runnable 
 {

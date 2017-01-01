@@ -9,7 +9,7 @@ import java.net.Socket;
 
 /**
  *
- * @author Andre
+ * @author Andre Diogo, Gonçalo Pereira, António Silva
  */
 public class LoginRequest 
 {

@@ -18,10 +18,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * Every ClientsManager is a manager for the clients in an auction house.
  * It manages accesses to all relevant client data.
@@ -29,7 +25,7 @@ import java.util.logging.Logger;
  * Keeps ClientLogs as a repository for offline clients.
  * It implements Observer so it can be notified by a AuctionsManager of when
  * an auction ends.
- * @author Andre
+ * @author Andre Diogo, Gonçalo Pereira, António Silva
  */
 public class ClientsManager implements Observer
 {

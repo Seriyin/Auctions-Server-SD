@@ -15,7 +15,7 @@ import java.util.concurrent.BlockingQueue;
  * when offline.
  * Workers begin by writing from TempLogs on a corresponding socket before
  * authentication.
- * @author Andre
+ * @author Andre Diogo, Gonçalo Pereira, António Silva
  */
 public class WorkerWriter implements Runnable 
 {
