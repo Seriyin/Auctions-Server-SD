@@ -8,8 +8,6 @@ package Auctions.Server;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Workers that write Strings from a client's log to the corresponding socket.
@@ -55,9 +53,8 @@ public class WorkerWriter implements Runnable
             {
                 try 
                 {
-                    RequestSocket.isOutputShutdown();
                     CurrentString = Log.take();
-                    SocketOutput.println(CurrentString);                        
+                    SocketOutput.println(CurrentString);                      
                 } 
                 catch (InterruptedException ex) {}
             }
