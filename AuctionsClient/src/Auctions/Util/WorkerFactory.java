@@ -73,7 +73,7 @@ public class WorkerFactory
         {
             return null;
         }
-        return new PrintWriter(strm);
+        return new PrintWriter(strm,true);
     }
 
     private static BufferedReader initSystemReader() 

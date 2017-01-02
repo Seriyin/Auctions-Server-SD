@@ -35,7 +35,7 @@ public class WorkerInputHandler implements Callable<String>
     @Override
     public String call() {
         String ResultString=null;
-        String[] InputSplit = ToParse.trim().split("|");
+        String[] InputSplit = ToParse.trim().split("´");
         if (InputSplit.length>=1) 
         {
             //There is a command by a client 'C'

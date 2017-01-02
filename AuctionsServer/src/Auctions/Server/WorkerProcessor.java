@@ -42,7 +42,9 @@ public class WorkerProcessor implements Runnable
         if(handleLogin())
         {
             ClientsManager.cleanPreLoginLogs(RequestSocket);
+            AuctionsManager.acknowledgeOutput(User, SocketOutput);
             handleInput();
+            AuctionsManager.atSocketDisconnected(User);
         }
     }
 
@@ -93,7 +95,7 @@ public class WorkerProcessor implements Runnable
                 e.printStackTrace();
             }
         }
-        return RequestSocket.isClosed();
+        return !RequestSocket.isClosed();
     }
 
     /**

@@ -1,6 +1,6 @@
 /*
  * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
+ * To change this template file, choose Tools ´ Templates
  * and open the template in the editor.
  */
 package Auctions.Client;
@@ -55,8 +55,12 @@ public class WorkerWriter implements Runnable
         try 
         {
             m.run();
+            RequestSocket.close();
         } 
-        catch (IOException ex) {}
+        catch (IOException ex) 
+        {
+            ex.printStackTrace();
+        }
     }
     
     private void LoginUser(BufferedReader bf) throws IOException
@@ -66,6 +70,7 @@ public class WorkerWriter implements Runnable
         SocketOutput.println(Menu.readString(bf));
         System.out.println("Digite a sua password");
         SocketOutput.println(Menu.readString(bf));
+        SocketOutput.flush();
         String Result=null;
         while((Result=SharedString.get())==null);
         if(Result.equals("OK")) 
@@ -80,10 +85,11 @@ public class WorkerWriter implements Runnable
         System.out.println("Digite o seu nome de utilizador");
         SocketOutput.println(Menu.readString(bf));
         System.out.println("Digite a sua password");
-        SocketOutput.println(Menu.readString(bf));
+        SocketOutput.println(Menu.readString(bf));        
+        SocketOutput.flush();
     }
     
-    private void MainMenu() 
+    private void MainMenu() throws IOException
     {
         Menu m;
         {
@@ -99,6 +105,7 @@ public class WorkerWriter implements Runnable
         m.addChoice((InputProcedure)this::RegisterAuction);
         m.addChoice((InputProcedure)this::BidAuction);
         m.addChoice((InputProcedure)this::EndAuction);
+        m.run();
     }
     
     private void ListAuctions()
@@ -109,7 +116,7 @@ public class WorkerWriter implements Runnable
     private void RegisterAuction(BufferedReader bf) throws IOException
     {
         System.out.println("Digite uma descrição do que pretende leiloar");
-        SocketOutput.println("V|"+Menu.readString(bf));
+        SocketOutput.println("V´"+Menu.readString(bf));
     }
     
     private void BidAuction(BufferedReader bf) throws IOException
@@ -118,14 +125,14 @@ public class WorkerWriter implements Runnable
         String AuctionNumber=Menu.readPosLong(bf);
         System.out.println("Digite o montante que quer licitar");
         String BidAmount=Menu.readPosFloat(bf);
-        SocketOutput.println("C|"+AuctionNumber+"|"+BidAmount);
+        SocketOutput.println("C´"+AuctionNumber+"´"+BidAmount);
     }
     
     private void EndAuction(BufferedReader bf) throws IOException
     {
         System.out.println("Digite o número do leilão");
         String AuctionNumber=Menu.readPosLong(bf);
-        SocketOutput.println("V|"+AuctionNumber);
+        SocketOutput.println("V´"+AuctionNumber);
     }
     
 }

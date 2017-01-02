@@ -109,7 +109,7 @@ public class WorkerReader implements Runnable
                 }
             }            
         }
-        catch(IOException ex) 
+        catch(IOException | NullPointerException ex) 
         {
             ClientsManager.cleanPreLoginLogs(SocketToRead);
         }
@@ -175,7 +175,7 @@ public class WorkerReader implements Runnable
         boolean PostSuccess=true;
         try 
         {
-            PostSuccess=TaskBoard.offer(User, 4, TimeUnit.SECONDS);
+            PostSuccess=TaskBoard.offer(ToParse, 4, TimeUnit.SECONDS);
         } 
         catch (InterruptedException ex) 
         {

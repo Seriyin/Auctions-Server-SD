@@ -88,12 +88,6 @@ public class AuctionsManager extends Observable
     public void handleAuctionInput(String User,
                                    String ToParse) 
     {
-        TaskPool.submit(()->handleInput(User,ToParse));
-    }
-    
-    private void handleInput(String User, 
-                             String ToParse) 
-    {
         Future<String> ResultString=
                 TaskPool.submit(new WorkerInputHandler(User,ToParse,this));
         PrintWriter SocketOutput=null;

@@ -41,7 +41,7 @@ public class WorkerFactory {
         if (SocketInput != null && SocketOutput !=null) 
         {
             ClientsManager.acknowledgeSocket(RequestSocket);
-            ExpandableThreadPool.submit(new WorkerReader(RequestSocket,
+            /*ExpandableThreadPool.submit(new WorkerReader(RequestSocket,
                                                          ClientsManager,
                                                          AuctionsManager,
                                                          SocketInput));
@@ -53,7 +53,22 @@ public class WorkerFactory {
                                                             ClientsManager,
                                                             AuctionsManager,
                                                             SocketOutput));
-
+            */
+            Thread t1= new Thread(new WorkerReader(RequestSocket,
+                                                     ClientsManager,
+                                                     AuctionsManager,
+                                                     SocketInput));
+            Thread t2= new Thread(new WorkerWriter(RequestSocket,
+                                                     ClientsManager,
+                                                     AuctionsManager,
+                                                     SocketOutput));
+            Thread t3= new Thread(new WorkerProcessor(RequestSocket,
+                                                     ClientsManager,
+                                                     AuctionsManager,
+                                                     SocketOutput));
+            t1.start();
+            t2.start();
+            t3.start();
         }
     }
     
@@ -83,7 +98,7 @@ public class WorkerFactory {
         {
             return null;
         }
-        return new PrintWriter(strm);
+        return new PrintWriter(strm,true);
     }
 
 }

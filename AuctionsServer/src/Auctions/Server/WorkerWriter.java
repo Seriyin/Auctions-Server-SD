@@ -86,7 +86,7 @@ public class WorkerWriter implements Runnable
             SocketOutput.println(ToWrite);
             User=UserContainer.get();
         }
-        return RequestSocket.isClosed();
+        return !RequestSocket.isClosed();
     }
     
 }

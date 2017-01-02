@@ -27,7 +27,7 @@ public final class SimpleQueue<T>
     
     public synchronized boolean isEmpty() 
     {
-        return object!=null;
+        return object==null;
     }
     
     public synchronized void set(T object) 

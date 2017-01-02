@@ -9,7 +9,6 @@ package Auctions.Client;
 import Auctions.Util.Wrapper;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
@@ -59,14 +58,20 @@ public class WorkerReader implements Runnable
     private boolean handleLogin() throws IOException
     {
         boolean BlewUp=false;
-        String ServerResponse;
-        while(!(ServerResponse=SocketInput.readLine()).equals("OK") || ServerResponse!=null)
+        String ServerResponse=SocketInput.readLine();
+        while((ServerResponse)!=null 
+               && !ServerResponse.equals("OK"))
         {
             if (ServerResponse.equals("NOT")) 
             {
                 SharedString.set(ServerResponse);
                 System.out.println("Login inválido");
             }
+            else 
+            {
+                System.out.println(ServerResponse);
+            }
+            ServerResponse=SocketInput.readLine();
         }
         if (ServerResponse==null) 
         {

@@ -23,9 +23,9 @@ public class Wrapper<T>
         this.object=object;
     }
         
-    public boolean isNull() 
+    public synchronized boolean isNull() 
     {
-        return object!=null;
+        return object==null;
     }
     
     public synchronized void set(T object) 
