@@ -41,10 +41,7 @@ public class WorkerReader implements Runnable
                 handleInput();
             }
         } 
-        catch (IOException ex) 
-        {
-            ex.printStackTrace();
-        }
+        catch (IOException ex) {}
         try 
         {
             RequestSocket.close();

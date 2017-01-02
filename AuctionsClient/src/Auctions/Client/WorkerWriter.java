@@ -65,6 +65,7 @@ public class WorkerWriter implements Runnable
     
     private void LoginUser(BufferedReader bf) throws IOException
     {
+        checkExit();
         SocketOutput.println("0");
         System.out.println("Digite o seu nome de utilizador");
         SocketOutput.println(Menu.readString(bf));
@@ -81,6 +82,7 @@ public class WorkerWriter implements Runnable
 
     private void RegisterUser(BufferedReader bf) throws IOException
     {
+        checkExit();
         SocketOutput.println("1");
         System.out.println("Digite o seu nome de utilizador");
         SocketOutput.println(Menu.readString(bf));
@@ -110,17 +112,20 @@ public class WorkerWriter implements Runnable
     
     private void ListAuctions()
     {
+        checkExit();
         SocketOutput.println("C");
     }
     
     private void RegisterAuction(BufferedReader bf) throws IOException
     {
+        checkExit();
         System.out.println("Digite uma descrição do que pretende leiloar");
         SocketOutput.println("V´"+Menu.readString(bf));
     }
     
     private void BidAuction(BufferedReader bf) throws IOException
     {
+        checkExit();
         System.out.println("Digite o número do leilão");
         String AuctionNumber=Menu.readPosLong(bf);
         System.out.println("Digite o montante que quer licitar");
@@ -130,9 +135,19 @@ public class WorkerWriter implements Runnable
     
     private void EndAuction(BufferedReader bf) throws IOException
     {
+        checkExit();
         System.out.println("Digite o número do leilão");
         String AuctionNumber=Menu.readPosLong(bf);
         SocketOutput.println("V´"+AuctionNumber);
+    }
+
+    private void checkExit() 
+    {
+        if(RequestSocket.isClosed())
+        {
+            System.out.println("Falha a escrever para o Socket");
+            System.exit(-1);
+        }
     }
     
 }
