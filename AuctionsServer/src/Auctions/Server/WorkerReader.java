@@ -132,7 +132,10 @@ public class WorkerReader implements Runnable
      * then the WorkerProcessor will give both the reader a response if the
      * request went through and instruct the WorkerWriter to write a message
      * to the socket.
-     * @param Request
+     * @param RequestToMake the login request
+     * @param RequestContainer a container for the request
+     * @param ExpectedResponse a container for a response from processing
+     * of whether the login request was a successful login.
      * @return a boolean representing if the request was successful
      */
     private boolean postUserLogin(LoginRequest RequestToMake,
@@ -183,8 +186,8 @@ public class WorkerReader implements Runnable
     
     /**
      * Called by a reader to attempt to post an action for a processor to
-     * process in a work queue
-     * @param User The user who asked
+     * process in a work queue/task board.
+     * @param TaskBoard The board/queue of tasks to be processed.
      * @param ToParse The string with the action to perform/process.
      * @return if the posting was successful.
      */

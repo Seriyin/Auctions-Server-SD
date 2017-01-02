@@ -29,7 +29,7 @@ import java.util.concurrent.Future;
  * Future.cancel(true) launches a thread interrupt.
  *
  * Cancel order:
- * WorkerReader -> WorkerProcessor -> WorkerWriter.
+ * WorkerReader - WorkerProcessor - WorkerWriter.
  * @author André Diogo, Gonçalo Pereira, António Silva
  */
 public class WorkerFactory {

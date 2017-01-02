@@ -9,9 +9,11 @@ import java.io.Serializable;
 import java.util.TreeSet;
 
 /**
- * Right now we have to be very careful.
- * Auctions has nested synchronization.
- * Will have to think about it more tomorrow.
+ * Auctions contain all relevant auction information,
+ * whether they are active, their identifier, the auctioneer,
+ * the description and an ordered set of bids.
+ * Auctions have nested synchronization (due to the bids) and are quite complex.
+ * So far seem to be working fine.
  * @author André Diogo, Gonçalo Pereira, António Silva
  */
 public class Auction implements Serializable {

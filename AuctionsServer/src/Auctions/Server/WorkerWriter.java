@@ -27,7 +27,7 @@ public class WorkerWriter implements Runnable
     private final AuctionsManager AuctionsManager;
     private String User;
 
-        /**
+    /**
      * 
      * @param RequestSocket The client socket this worker handles
      * @param ClientsManager The ClientsManager this worker delegates 
@@ -35,7 +35,6 @@ public class WorkerWriter implements Runnable
      * @param AuctionsManager The AuctionsManager this worker delegates
      * auctions-specific input to.
      * @param SocketOutput A Writer over a socket output stream.
-     * @param Processor A processor thread's computation to interrupt on exit.
      */
     public WorkerWriter(Socket RequestSocket, 
                         ClientsManager ClientsManager,

@@ -156,7 +156,7 @@ public class AuctionsManager extends Observable
      * time. If a bid is lower than a bid already registered, which may even happen
      * do to scheduling, informs the client of a bid being lower than a previously
      * registerd bid.
-     * @param AuctionNumber the auction's identifier. 
+     * @param AuctionCode the auction's identifier. 
      * @param ValueToBid the value to bid.
      * @param User the user who registers the bid.
      * @return a string indicating what happened with the bid.
