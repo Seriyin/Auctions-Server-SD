@@ -70,9 +70,9 @@ public class Auction implements Serializable {
         this.Auctioneer=User;
         this.Description=Description;
         this.Bidders=new TreeSet<>(
-                (bid1,bid2)->{if (bid1.getBid()>bid2.getBid()) return 1;
+                (bid1,bid2)->{if (bid1.getBid()>bid2.getBid()) return -1;
                               else if(bid1.getBid()==bid2.getBid()) return 0;
-                              else return -1;});
+                              else return 1;});
     }
 
 

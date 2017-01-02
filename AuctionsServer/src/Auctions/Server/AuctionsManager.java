@@ -142,8 +142,8 @@ public class AuctionsManager extends Observable
                     {
                         sb.append("*");                           
                     }
-                    sb.append(String.valueOf(value.getAuctionNumber()));
-                    sb.append(value.getDescription());
+                    sb.append("ID: " + String.valueOf(value.getAuctionNumber()));
+                    sb.append(" - " + value.getDescription());
                     sb.append("\n");
                     TaskPool.submit(new WorkerLoglessWriter(sb.toString(),SocketOutput));
                 }
@@ -186,7 +186,7 @@ public class AuctionsManager extends Observable
         {
             try 
             {
-                if(toRegisterBid.addBid(b))
+                if(!toRegisterBid.addBid(b))
                 {
                     Result = "Licitação registada";
                 }

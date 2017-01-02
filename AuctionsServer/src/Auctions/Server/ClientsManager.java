@@ -535,7 +535,7 @@ public class ClientsManager implements Observer
     {
         StringBuilder sb=new StringBuilder();                
         sb.append(HighestBidder)
-          .append("ganhou o seu leilão - ")
+          .append(" ganhou o seu leilão - ")
           .append(AuctionNumber)
           .append(" - com a oferta de: ")
           .append(BidAmount);
