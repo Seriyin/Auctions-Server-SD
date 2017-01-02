@@ -17,9 +17,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * A worker factory contains an expandable thread pool
- * to 'infinitely' run new WorkerThreads for dedicated reading
- * and writing, makes it vulnerable to slow loris.
+ * A worker factory contains a fixed thread pool
+ * to run a fixed maximum new WorkerThreads (2048) for dedicated reading
+ * and writing, makes it invulnerable to slow loris.
  * It tries to initialize input and output streams for each socket
  * before running WorkerThreads in order to be fail-fast.
  * If a socket goes bad it will necessarily be after submitting new workers.
@@ -33,11 +33,11 @@ import java.util.concurrent.Future;
  * @author André Diogo, Gonçalo Pereira, António Silva
  */
 public class WorkerFactory {
-    private final ExecutorService ExpandableThreadPool;
+    private final ExecutorService FixedThreadPool;
     
     public WorkerFactory()
     {
-        ExpandableThreadPool = Executors.newCachedThreadPool();
+        FixedThreadPool = Executors.newFixedThreadPool(2048);
     }
     
     public void buildSocketWorkers(Socket RequestSocket, 
@@ -50,17 +50,17 @@ public class WorkerFactory {
         {
             ClientsManager.acknowledgeSocket(RequestSocket);
             Future<?> Writer =
-            ExpandableThreadPool.submit(new WorkerWriter(RequestSocket,
+            FixedThreadPool.submit(new WorkerWriter(RequestSocket,
                                                          ClientsManager,
                                                          AuctionsManager,
                                                          SocketOutput));
             Future<?> Processor =
-            ExpandableThreadPool.submit(new WorkerProcessor(RequestSocket,
+            FixedThreadPool.submit(new WorkerProcessor(RequestSocket,
                                                             ClientsManager,
                                                             AuctionsManager,
                                                             SocketOutput,
                                                             Writer));
-            ExpandableThreadPool.submit(new WorkerReader(RequestSocket,
+            FixedThreadPool.submit(new WorkerReader(RequestSocket,
                                                          ClientsManager,
                                                          AuctionsManager,
                                                          SocketInput,
