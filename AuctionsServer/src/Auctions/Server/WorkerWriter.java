@@ -8,6 +8,8 @@ package Auctions.Server;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Workers that write Strings from a client's log to the corresponding socket.
@@ -25,10 +27,20 @@ public class WorkerWriter implements Runnable
     private final AuctionsManager AuctionsManager;
     private String User;
 
-    WorkerWriter(Socket RequestSocket, 
-                 ClientsManager ClientsManager,
-                 AuctionsManager AuctionsManager,
-                 PrintWriter SocketOutput) 
+        /**
+     * 
+     * @param RequestSocket The client socket this worker handles
+     * @param ClientsManager The ClientsManager this worker delegates 
+     * client-specific input to.
+     * @param AuctionsManager The AuctionsManager this worker delegates
+     * auctions-specific input to.
+     * @param SocketOutput A Writer over a socket output stream.
+     * @param Processor A processor thread's computation to interrupt on exit.
+     */
+    public WorkerWriter(Socket RequestSocket, 
+                        ClientsManager ClientsManager,
+                        AuctionsManager AuctionsManager,
+                        PrintWriter SocketOutput) 
     {
         this.RequestSocket=RequestSocket;
         this.ClientsManager=ClientsManager;
@@ -55,7 +67,7 @@ public class WorkerWriter implements Runnable
                 {
                     CurrentString = Log.take();
                     SocketOutput.println(CurrentString);                      
-                } 
+                }
                 catch (InterruptedException ex) {}
             }
         }
@@ -71,22 +83,38 @@ public class WorkerWriter implements Runnable
      */
     private boolean handleLogin() 
     {
+        boolean SuccessfulLogin = false;
         SimpleQueue<String> ToWriteContainer
                 = ClientsManager.getProcessorToWriterRequest(RequestSocket);
         String ToWrite = null;
-        while(!RequestSocket.isClosed() &&
-              !(ToWrite=ToWriteContainer.get()).equals("OK"))
+        try 
         {
-            SocketOutput.println(ToWrite);
-        }
-        if (!RequestSocket.isClosed()) 
+            while(!RequestSocket.isClosed() &&
+                    !(ToWrite=ToWriteContainer.get()).equals("OK"))
+            {
+                SocketOutput.println(ToWrite);
+            }
+            if (!RequestSocket.isClosed()) 
+            {
+                SuccessfulLogin=true;
+            }
+        } 
+        catch (InterruptedException ex) {}
+        if (SuccessfulLogin) 
         {
             SimpleQueue<String> UserContainer
                 = ClientsManager.getProcessorToWriterUser(RequestSocket);
             SocketOutput.println(ToWrite);
-            User=UserContainer.get();
+            try 
+            {
+                User=UserContainer.get();
+            } 
+            catch (InterruptedException ex) 
+            {
+                ex.printStackTrace();
+            }
         }
-        return !RequestSocket.isClosed();
+        return SuccessfulLogin;
     }
     
 }

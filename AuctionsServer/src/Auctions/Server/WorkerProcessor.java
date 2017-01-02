@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -20,17 +23,20 @@ public class WorkerProcessor implements Runnable
     private final ClientsManager ClientsManager;
     private final AuctionsManager AuctionsManager;
     private final PrintWriter SocketOutput;
+    private final Future Writer;
     private String User;
     
     public WorkerProcessor(Socket RequestSocket,
                            ClientsManager ClientsManager,
                            AuctionsManager AuctionsManager,
-                           PrintWriter SocketOutput) 
+                           PrintWriter SocketOutput,
+                           Future Writer) 
     {
         this.RequestSocket=RequestSocket;
         this.ClientsManager=ClientsManager;
         this.AuctionsManager=AuctionsManager;
         this.SocketOutput=SocketOutput;
+        this.Writer=Writer;
         this.User=null;
     }
 
@@ -61,20 +67,27 @@ public class WorkerProcessor implements Runnable
                 = ClientsManager.getProcessorToSocketResponse(RequestSocket);
         boolean SuccessfulLogin=false;
         LoginRequest Request = null;
-        while(!RequestSocket.isClosed() && !SuccessfulLogin)
+        try
         {
-            Request=RequestContainer.get();
-            if (Request.isLogin()) 
+            while(!RequestSocket.isClosed() && !SuccessfulLogin)
             {
-                SuccessfulLogin=ClientsManager.loginUser(Request,
-                                                         ToWriteContainer,
-                                                         UserContainer);
-                ResponseContainer.set(SuccessfulLogin);
+                Request=RequestContainer.get();
+                if (Request.isLogin())
+                {
+                    SuccessfulLogin=ClientsManager.loginUser(Request,
+                            ToWriteContainer,
+                            UserContainer);
+                    ResponseContainer.set(SuccessfulLogin);
+                }
+                else
+                {
+                    ClientsManager.registerUser(Request,ToWriteContainer);
+                }
             }
-            else 
-            {
-                ClientsManager.registerUser(Request,ToWriteContainer);
-            }
+        } 
+        catch (InterruptedException ex) 
+        {
+            Writer.cancel(true);
         }
         if (SuccessfulLogin) 
         {
@@ -95,7 +108,7 @@ public class WorkerProcessor implements Runnable
                 e.printStackTrace();
             }
         }
-        return !RequestSocket.isClosed();
+        return SuccessfulLogin;
     }
 
     /**
@@ -109,13 +122,14 @@ public class WorkerProcessor implements Runnable
         String CurrentTask;
         try 
         {
-            while(!RequestSocket.isClosed() &&
-                  !(CurrentTask=ClientTaskBoard.take()).equals("END"))
+            while(!RequestSocket.isClosed())
             {
+                CurrentTask=ClientTaskBoard.take();
                 AuctionsManager.handleAuctionInput(User, CurrentTask);
             }
         } 
         catch (InterruptedException e){}
+        Writer.cancel(true);
     }
     
     

@@ -36,17 +36,12 @@ public final class SimpleQueue<T>
         notify();
     }
     
-    public synchronized T get() 
+    public synchronized T get() throws InterruptedException 
     {
         while (isEmpty()) 
         { 
-            try 
-            {
-                wait();
-            } 
-            catch (InterruptedException ex) 
-            {}
-        }
+            wait();
+        } 
         T result=object;
         object=null;
         return result;

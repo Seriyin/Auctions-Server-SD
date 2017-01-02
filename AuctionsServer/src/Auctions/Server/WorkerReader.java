@@ -4,8 +4,13 @@ package Auctions.Server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** 
  * AuctionReaders are in charge of handling all input from clients
@@ -24,6 +29,7 @@ public class WorkerReader implements Runnable
     private final BufferedReader SocketInput;
     private String User;
     private String Password;
+    private final Future Processor;
     
     /**
      * 
@@ -33,16 +39,19 @@ public class WorkerReader implements Runnable
      * @param AuctionsManager The AuctionsManager this worker delegates
      * auctions-specific input to.
      * @param SocketInput A reader over a socket input stream.
+     * @param Processor A processor thread's computation to interrupt on exit.
      */
     public WorkerReader(Socket SocketToRead, 
                         ClientsManager ClientsManager,
                         AuctionsManager AuctionsManager,
-                        BufferedReader SocketInput) 
+                        BufferedReader SocketInput,
+                        Future Processor) 
     {
         this.SocketToRead=SocketToRead;
         this.ClientsManager=ClientsManager;
         this.AuctionsManager=AuctionsManager;
         this.SocketInput=SocketInput;
+        this.Processor = Processor;
     }
 
     
@@ -86,7 +95,8 @@ public class WorkerReader implements Runnable
         boolean SuccessfulLogin=false;
         try 
         { 
-            while (!SuccessfulLogin){
+            while (!SuccessfulLogin)
+            {
                 boolean IsLogin = SocketInput.readLine().equals("0");
                 User=SocketInput.readLine();
                 Password = null;
@@ -112,6 +122,7 @@ public class WorkerReader implements Runnable
         catch(IOException | NullPointerException ex) 
         {
             ClientsManager.cleanPreLoginLogs(SocketToRead);
+            Processor.cancel(true);
         }
         return SuccessfulLogin;
     }
@@ -128,8 +139,17 @@ public class WorkerReader implements Runnable
                                   SimpleQueue<LoginRequest> RequestContainer,
                                   SimpleQueue<Boolean> ExpectedResponse) 
     {
+        boolean Response=false;
         RequestContainer.set(RequestToMake);
-        return ExpectedResponse.get();
+        try 
+        {
+            Response=ExpectedResponse.get();
+        } 
+        catch (InterruptedException ex) 
+        {
+            ex.printStackTrace();
+        }
+        return Response;
     }
     
     
@@ -158,8 +178,7 @@ public class WorkerReader implements Runnable
             {}
         }
         catch (IOException e) {}
-        TaskBoard.drainTo(null);
-        TaskBoard.offer("END");
+        Processor.cancel(true);
     }
     
     /**

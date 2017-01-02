@@ -142,9 +142,8 @@ public class AuctionsManager extends Observable
                     {
                         sb.append("*");                           
                     }
-                    sb.append("ID: " + String.valueOf(value.getAuctionNumber()));
-                    sb.append(" - " + value.getDescription());
-                    sb.append("\n");
+                    sb.append("ID: ").append(String.valueOf(value.getAuctionNumber()));
+                    sb.append(" - ").append(value.getDescription());
                     TaskPool.submit(new WorkerLoglessWriter(sb.toString(),SocketOutput));
                 }
             }

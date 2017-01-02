@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * A worker factory contains an expandable thread pool
@@ -22,6 +23,13 @@ import java.util.concurrent.Executors;
  * It tries to initialize input and output streams for each socket
  * before running WorkerThreads in order to be fail-fast.
  * If a socket goes bad it will necessarily be after submitting new workers.
+ * Server's worker factory now hands futures in dependency order to allow the
+ * killing of all threads consistently.
+ *
+ * Future.cancel(true) launches a thread interrupt.
+ *
+ * Cancel order:
+ * WorkerReader -> WorkerProcessor -> WorkerWriter.
  * @author André Diogo, Gonçalo Pereira, António Silva
  */
 public class WorkerFactory {
@@ -41,34 +49,22 @@ public class WorkerFactory {
         if (SocketInput != null && SocketOutput !=null) 
         {
             ClientsManager.acknowledgeSocket(RequestSocket);
-            /*ExpandableThreadPool.submit(new WorkerReader(RequestSocket,
-                                                         ClientsManager,
-                                                         AuctionsManager,
-                                                         SocketInput));
+            Future<?> Writer =
             ExpandableThreadPool.submit(new WorkerWriter(RequestSocket,
                                                          ClientsManager,
                                                          AuctionsManager,
                                                          SocketOutput));
+            Future<?> Processor =
             ExpandableThreadPool.submit(new WorkerProcessor(RequestSocket,
                                                             ClientsManager,
                                                             AuctionsManager,
-                                                            SocketOutput));
-            */
-            Thread t1= new Thread(new WorkerReader(RequestSocket,
-                                                     ClientsManager,
-                                                     AuctionsManager,
-                                                     SocketInput));
-            Thread t2= new Thread(new WorkerWriter(RequestSocket,
-                                                     ClientsManager,
-                                                     AuctionsManager,
-                                                     SocketOutput));
-            Thread t3= new Thread(new WorkerProcessor(RequestSocket,
-                                                     ClientsManager,
-                                                     AuctionsManager,
-                                                     SocketOutput));
-            t1.start();
-            t2.start();
-            t3.start();
+                                                            SocketOutput,
+                                                            Writer));
+            ExpandableThreadPool.submit(new WorkerReader(RequestSocket,
+                                                         ClientsManager,
+                                                         AuctionsManager,
+                                                         SocketInput,
+                                                         Processor));
         }
     }
     
