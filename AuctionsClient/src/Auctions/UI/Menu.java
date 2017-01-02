@@ -202,6 +202,7 @@ public class Menu
             }
             else if (x==0) {
                 quit--;
+                System.exit(0);
             }
             else {
                 System.out.println("Escolha Inválida");
